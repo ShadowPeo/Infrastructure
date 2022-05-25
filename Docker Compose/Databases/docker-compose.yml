@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+
+#Database Services
+
+  InfluxDB:
+    container_name: InfluxDB
+    image: influxdb:alpine
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - /docker/Data/Databases/InfluxDB:/var/lib/influxdb
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8086:8086
+
+  MariaDB:
+    container_name: MariaDB
+    image: mariadb:10
+    env_file: 
+      - MariaDB.senv
+    volumes:
+      - /docker/Data/Databases/MariaDB:/var/lib/mysql
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3306:3306
+
+  MongoDB:
+    container_name: MongoDB
+    image: mongo:latest
+    volumes:
+      - /docker/Data/Databases/MongoDB:/data/db
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 27017:27017
+
+  ElasticSearch:
+    container_name: ElasticSearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    volumes:
+      - /docker/Data/Databases/ElasticSearch:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - node.name=elasticsearch
+      - discovery.type=single-node
+    network_mode: bridge
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+#Database Administration Tools
+
+  Adminer:
+    container_name: Adminer
+    image: adminer:latest
+    restart: unless-stopped
+    links:
+      - MariaDB:MariaDB
+    network_mode: bridge
+    ports:
+      - 8089:8080
+
+  Chronograf:
+    container_name: Chronograf
+    image: chronograf:alpine
+    volumes:
+      - /docker/Data/Databases/Chronograf:/var/lib/chronograf
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 8888:8888
+
+  PHPMyAdmin:
+    container_name: PHPMyAdmin
+    image: phpmyadmin/phpmyadmin:latest
+    restart: unless-stopped
+    links:
+      - MariaDB:db
+    network_mode: bridge
+    ports:
+      - 5593:80
+      - 9001:9000
+

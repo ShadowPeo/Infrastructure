@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  Organizr:
+    container_name: Organizr
+    image: organizr/organizr:latest
+    volumes:
+      - /docker/Data/Portals/Organizr:/config
+    restart: always
+    healthcheck:
+      test: curl --fail -s http://localhost:80/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    environment:
+     - fpm=true #true or false | using true will provide better performance
+     - branch=v2-master #v2-master or #v2-develop
+     - PUID=1000
+     - PGID=1000
+     - TZ=Australia/Melbourne
+    network_mode: bridge
+    ports:
+      - 8844:80

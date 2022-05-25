@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  Observium:
+    container_name: Observium
+    image: mbixtech/observium:latest
+    env_file: 
+      - Observium.senv
+    volumes:
+      - /volume1/docker/Observium/RRD:/opt/observium/rrd
+      - /volume1/docker/Observium/Logs:/opt/observium/logs
+    restart: always
+    external_links:
+      - MariaDB:db
+    network_mode: bridge
+    ports:
+      - 5091:80

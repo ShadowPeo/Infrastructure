@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  Zabbix_Server:
+    container_name: Zabbix_Server
+    hostname: zabbix_server
+    domainname: gwd.simmonds.network
+    image: zabbix/zabbix-server-mysql:latest
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 10051:10051
+    env_file: 
+      - Zabbix.senv
+    external_links:
+      - MariaDB:MariaDB
+    volumes:
+      - /docker/Data/Services/Zabbix/Modules:/var/lib/zabbix/modules
+      - /docker/Data/Services/Zabbix/SSL/Keys:/var/lib/zabbix/ssl/keys
+      - /docker/Data/Services/Zabbix/SSL/Certs:/var/lib/zabbix/ssl/certs
+      - /docker/Data/Services/Zabbix/SSL/CA:/var/lib/zabbix/ssl/ssl_ca
+      - /docker/Data/Services/Zabbix/SSH_Keys:/var/lib/zabbix/ssh_keys
+      - /docker/Data/Services/Zabbix/Scripts/Alert:/usr/lib/zabbix/alertscripts
+      - /docker/Data/Services/Zabbix/Scripts/External:/usr/lib/zabbix/externalscripts
+      - /docker/Data/Services/Zabbix/Enc:/var/lib/zabbix/enc
+      - /docker/Data/Services/Zabbix/Export:/var/lib/zabbix/export
+      - /docker/Data/Services/Zabbix/MIBs:/var/lib/zabbix/mibs
+      - /docker/Data/Services/Zabbix/SNMP_Traps:/var/lib/zabbix/snmptraps
+      - /docker/Data/Services/Zabbix/Config/zabbix_server.conf:/etc/zabbix/zabbix_server.conf
+
+  Zabbix-Web:
+    container_name: Zabbix-Web
+    hostname: zabbix
+    domainname: gwd.simmonds.network
+    image: zabbix/zabbix-web-nginx-mysql:latest
+    healthcheck:
+      test: curl --fail -s http://localhost:80/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 8880:80
+      - 8843:443
+    env_file: 
+      - zabbix.env
+    links:
+       - Zabbix_Server:Zabbix_Server
+    external_links:
+        - MariaDB:MariaDB

@@ -1,0 +1,19 @@
+version: '3'
+services:
+  ShokoServer:
+    container_name: ShokoServer-App
+    image: shokoanime/server:latest
+    volumes:
+      - /volume1/docker/Data/Services/ShokoServer:/home/shoko/.shoko
+      - /volume1/Downloads/completed:/import
+      - /volume1/Media/Anime:/anime
+    environment:
+      PUID: 1024
+      PGID: 101
+    restart: always
+    ports:
+      - 8111:8111
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

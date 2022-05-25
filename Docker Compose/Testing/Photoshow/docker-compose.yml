@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  Photoshow:
+    container_name: Photoshow
+    image: linuxserver/photoshow:latest
+    env_file: 
+      - /volume1/docker/config/Shared Configs/linuxserver.env
+    volumes:
+      - /volume1/docker/Photoshow/config:/config
+      - /volume1/docker/Photoshow/Thumbs:/Thunmbs
+      - /Data/Media - Shared/2012-10-28 - Rally Driving:/Photos:ro
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 5591:80

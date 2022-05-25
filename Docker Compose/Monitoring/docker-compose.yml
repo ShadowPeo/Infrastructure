@@ -1,0 +1,112 @@
+version: '3'
+
+services:
+  AussieBB_Usage:
+    container_name: AussieBB_Usage
+    image: aussiebb_usage:latest
+    external_links:
+      - InfluxDB:InfluxDB
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    env_file: 
+      - AussieBB.senv
+    restart: unless-stopped
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  Grafana:
+    container_name: Grafana
+    image: grafana/grafana:latest
+    env_file: 
+      - grafana.env
+    user: "1000"
+    volumes:
+      - /docker/Data/Monitoring/Grafana/Data:/var/lib/grafana
+    external_links:
+      - InfluxDB:InfluxDB
+    healthcheck:
+      test: curl --fail -s http://localhost:3000/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3000:3000
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  UniFi-Poller:
+    container_name: UniFi-Poller
+    image: golift/unifi-poller:latest
+    restart: always
+    volumes:
+      - /docker/Data/Monitoring/UniFi-Poller/unifi-poller.conf:/config/unifi-poller.conf
+    external_links:
+      - InfluxDB:InfluxDB
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  Varken:
+    container_name: Varken
+    image: boerderij/varken:latest
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - /docker/Data/Monitoring/Varken:/config
+    external_links:
+      - InfluxDB:InfluxDB
+    restart: always
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  StatPing:
+    container_name: StatPing
+    image: statping/statping:latest
+    volumes:
+      - /docker/Data/Monitoring/StatPing:/app
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
+    network_mode: bridge
+    ports:
+      - 6600:8080
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  SRV-DNS01-Monitor:
+    container_name: SRV-DNS01-Monitor
+    image: ebrianne/adguard_exporter:latest
+#    healthcheck:
+#      test: curl --fail -s http://localhost:8080/ || exit 1
+#      interval: 1m
+#      timeout: 10s
+ #     retries: 3
+    env_file:
+      - SRV-DNS01.senv
+    restart: always
+    network_mode: bridge
+    ports:
+      - 9617:9617
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

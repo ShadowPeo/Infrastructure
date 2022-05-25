@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  Portainer:
+    container_name: Portainer
+    hostname: portainer
+    domainname: gwd.simmonds.network
+    image: portainer/portainer:latest
+    healthcheck:
+      test: curl --fail -s http://localhost:9000/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    network_mode: bridge
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /docker/Data/Services/Portainer:/data:rw
+    ports:
+      - 9000:9000
+      - 8000:8000
+
+  Watchtower:
+    container_name: Watchtower
+    hostname: watchtower
+    domainname: srv-dh01.gwd.simmonds.network
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    network_mode: bridge
+    env_file: 
+      - Watchtower.env
+      - Watchtower.senv
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/sysadmin/.docker/config.json:/config.json

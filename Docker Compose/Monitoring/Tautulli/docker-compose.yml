@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  Tautulli:
+    container_name: Tautulli
+    image: linuxserver/tautulli:latest
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - /volume1/docker/Data/Monitoring/Tautulli:/config
+      - /volume1/Plex/Library/Application Support/Plex Media Server/Logs:/logs
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8181:8181

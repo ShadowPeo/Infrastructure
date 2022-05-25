@@ -1,0 +1,19 @@
+version: "2"
+services:
+    youtubedl:
+        container_name: Youtube-DL
+        environment: 
+            ALLOW_CONFIG_MUTATIONS: 'true'
+            UID: 1024
+            GID: 101
+            USER: admin
+        restart: always
+        volumes:
+            - /volume1/docker/Data/Services/Youtube-DL/appdata:/app/appdata
+            - /volume1/docker/Data/Services/Youtube-DL/audio:/app/audio
+            - /volume1/Media/Youtube:/app/video
+            - /volume1/docker/Data/Services/Youtube-DL/subscriptions:/app/subscriptions
+            - /volume1/docker/Data/Services/Youtube-DL/users:/app/users
+        ports:
+            - "8998:17442"
+        image: tzahi12345/youtubedl-material:latest

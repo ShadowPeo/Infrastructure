@@ -1,0 +1,68 @@
+version: "3.7"
+services:
+  photostructure:
+    container_name: PhotoStructure
+    image: photostructure/server
+    restart: unless-stopped # Optional. Starts PhotoStructure on boot.
+
+    # This is the user id and group id you want PhotoStructure to run as:
+    user: 1024:101 # < CHANGE THIS LINE to userid:groupid you want PhotoStructure to run as
+
+    volumes:
+      # This is where your PhotoStructure Library will be stored.
+      # It must be readable, writable, and have sufficient free space.
+      # If it is a remote volume, uncomment the PS_FORCE_LOCAL_DB_REPLICA
+      # environment line below.
+
+      - type: bind
+        source: /volume1/docker/Data/Services/PhotoStructure/Storage # < CHANGE THIS LINE
+        target: /ps/library
+
+      # This must be fast, local disk with many gigabytes free.
+      # PhotoStructure will use this directory for file caching
+      # and for storing a temporary database replica when your
+      # library is on a remote volume.
+
+      - type: bind
+        source: /volume1/docker/Data/Services/PhotoStructure/Temp
+        target: /ps/tmp
+
+      # This directory stores your "system settings"
+
+      - type: bind
+        source: /volume1/docker/Data/Services/PhotoStructure/Config
+        target: /ps/config
+
+      # This directory stores PhotoStructure logfiles.
+
+      - type: bind
+        source: /volume1/docker/Data/Services/PhotoStructure/Logs
+        target: /ps/logs
+
+      # Example additional directories to import into your library.
+      # Add as many as you'd like, or remove one or both of these examples.
+
+      # Set the target to /media/... or /mnt/...
+      # (the name doesn't matter, as long as it is unique)
+
+      - type: bind
+        source: /volume1/docker/Data/Services/PhotoStructure/Backup # < CHANGE THIS LINE
+        target: /var/photos-backup
+
+      # Here's another example directory to scan:
+      # - type: bind
+      #   source: /home/jamie/Pictures
+      #   target: /var/home-jamie-pictures
+
+    ports:
+      - 1787:1787/tcp
+
+    network_mode: bridge
+
+    environment:
+      # Note that this exposes your library to your LAN.
+      # You may want to hide this port behind an authenticating reverse proxy.
+      - "PS_EXPOSE_NETWORK_WITHOUT_AUTH=true"
+
+      # Uncomment if your library is on a remote volume:
+      # - "PS_FORCE_LOCAL_DB_REPLICA=true"
