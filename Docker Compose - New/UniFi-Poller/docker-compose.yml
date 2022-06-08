@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  UniFi-Poller:
+    container_name: UniFi-Poller
+    image: golift/unifi-poller:latest
+    restart: always
+    volumes:
+      - ./Config/unifi-poller.conf:/config/unifi-poller.conf
+    external_links:
+      - InfluxDB:InfluxDB
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

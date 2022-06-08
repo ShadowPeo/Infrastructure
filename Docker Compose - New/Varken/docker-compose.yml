@@ -1,0 +1,19 @@
+version: '3'
+services:
+  Varken:
+    container_name: Varken
+    image: boerderij/varken:latest
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - ./Data:/config
+    external_links:
+      - InfluxDB:InfluxDB
+    restart: always
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  ResilioSync:
+    container_name: ResilioSync
+    image: linuxserver/resilio-sync:latest
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - /volume1/docker/Resilio:/config
+      - /volume1/Downloads/Resilio:/downloads
+      - /volume1/homes/jpsimmonds/Media:/sync/JustinsMedia
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8888:8888
+      - 55555:55555

@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  BrewPi:
+    container_name: BrewPi
+    hostname: brewpi
+    domainname: gwd.simmonds.network
+    image: brewpi/brewpi-ubuntu:latest
+    volumes:
+      - /docker/Data/Services/BrewPi:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    network_mode: bridge
+    ports:
+      - 5086:80
+      - 5087:81

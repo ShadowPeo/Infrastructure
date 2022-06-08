@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+   SRV-DNS01-Monitor:
+    container_name: AdGuard_Exporter-DNS01
+    image: ebrianne/adguard_exporter:latest
+#    healthcheck:
+#      test: curl --fail -s http://localhost:8080/ || exit 1
+#      interval: 1m
+#      timeout: 10s
+ #     retries: 3
+    env_file:
+      - .senv
+    restart: always
+    network_mode: bridge
+    ports:
+      - 9617:9617
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

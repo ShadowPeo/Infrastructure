@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  PHPIPAM:
+    container_name: PHPIPAM
+    image: pierrecdn/phpipam:latest
+    env_file: 
+      - phpipam.senv
+    restart: always
+    external_links:
+      - MariaDB:db
+    network_mode: bridge
+    ports:
+      - 5592:80

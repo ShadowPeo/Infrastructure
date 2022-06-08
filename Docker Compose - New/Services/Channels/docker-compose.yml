@@ -1,0 +1,18 @@
+version: "3.0"
+services:
+  channels-dvr:
+    network_mode: host
+    restart: always
+    container_name: Channels-DVR
+    hostname: channels
+    image: timstephens24/channels-dvr
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      - PUID=1024
+      - PGID=101
+      - TZ=Australia/Melbourne
+    volumes:
+      - /volume1/docker/Data/Services/Channels:/channels-dvr
+      - /volume1/Media/Recordings:/shares/DVR # where you put the media files
+      - /etc/localtime:/etc/localtime:ro

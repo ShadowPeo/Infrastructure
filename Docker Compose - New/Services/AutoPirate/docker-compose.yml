@@ -1,0 +1,202 @@
+version: '3'
+
+services:
+  NZBget:
+    container_name: NZBget
+    image: linuxserver/nzbget:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/NZBget:/config
+      - /volume1/Downloads:/downloads
+    restart: always
+    network_mode: bridge
+    ports:
+      - 6790:6789
+
+  Deluge:
+    container_name: Deluge
+    image: linuxserver/deluge:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Deluge:/config
+      - /volume1/Downloads:/downloads
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8113:8112
+      - 58846:58846
+      - 58946:58946
+      - 58946:58946/udp
+
+  LazyLibrarian:
+    container_name: LazyLibrarian
+    image: thraxis/lazylibrarian-calibre:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Lazy Librarian:/config
+      - /volume1/Data/Books:/books
+      - /volume1/Downloads:/downloads
+    links:
+      - NZBget:NZBGet
+      - Deluge:Deluge
+    restart: always
+    network_mode: bridge
+    ports:
+      - 5299:5299
+
+  Sonarr:
+    container_name: Sonarr
+    image: linuxserver/sonarr:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Sonarr:/config
+      - /volume1/Downloads:/downloads
+      - /volume1/Media:/tv
+    links:
+      - NZBget:NZBget
+      - Deluge:Deluge
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8989:8989
+      
+  Radarr:
+    container_name: Radarr
+    image: linuxserver/radarr:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Radarr:/config
+      - /volume1/Downloads:/downloads
+      - /volume1/Media/Movies:/movies
+    links:
+      - NZBget:NZBget
+      - Deluge:Deluge
+    restart: always
+    network_mode: bridge
+    ports:
+      - 7878:7878
+      
+  Radarr_4K:
+    container_name: Radarr_4K
+    image: linuxserver/radarr:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Radarr_4K:/config
+      - /volume1/Downloads:/downloads
+      - /volume1/Media/Movies - 4K:/movies
+    links:
+      - NZBget:NZBget
+      - Deluge:Deluge
+    restart: always
+    network_mode: bridge
+    ports:
+      - 7879:7878
+      
+  Bazarr:
+    container_name: Bazarr
+    image: linuxserver/bazarr:latest
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Bazarr:/config
+      - /volume1/Media:/tv
+      - /volume1/Media/Movies:/movies
+    restart: always
+    network_mode: bridge
+    ports:
+     - 6767:6767
+
+  Calibre:
+    container_name: Calibre
+    image: linuxserver/calibre:latest
+    environment:
+      - PUID=1045
+      - PGID=65550
+      - TZ=Australia/Melbourne
+    volumes:
+      - /volume1/docker/Data/Services/Calibre/Config:/config
+      - /volume1/Data/Books:/books
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8080:8080
+      - 8081:8081
+
+  Calibre-Web:
+    container_name: Calibre-Web
+    image: linuxserver/calibre-web:latest
+    environment:
+      - DOCKER_MODS=linuxserver/calibre-web:calibre
+    env_file: 
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/Calibre-Web/Config:/config
+      - /volume1/Data/Books:/books
+    restart: always
+    network_mode: bridge
+    ports:
+      - 8083:8083
+   
+  Ombi:
+    container_name: Ombi
+    image: linuxserver/ombi:latest
+    env_file:
+      - SharedEnvironment.env
+    volumes:
+     - /volume1/docker/Data/Services/AutoPirate/Ombi:/config
+    healthcheck:
+      test: curl --fail -s http://localhost:3579/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3579:3579
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+
+  Readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: Readarr
+    env_file:
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Readarr:/config
+      - /volume1/Data/Books:/books
+      - /volume1/Downloads/completed/Books:/downloads/books
+      - /volume1/Downloads/completed/Audiobooks:/downloads/audiobooks
+    links:
+      - NZBget:NZBget
+      - Deluge:Deluge
+      - Calibre:Calibre
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+            
+  Prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: Prowlarr
+    env_file:
+      - SharedEnvironment.env
+    volumes:
+      - /volume1/docker/Data/Services/AutoPirate/Prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

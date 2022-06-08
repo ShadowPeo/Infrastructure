@@ -1,0 +1,17 @@
+version: "2.1"
+services:
+  NetbootXYZ:
+    image: linuxserver/netbootxyz
+    container_name: NetbootXYZ
+    environment:
+      - PUID=1000
+      - PGID=1000
+#      - MENU_VERSION=1.9.9 #optional
+    volumes:
+      - /docker/Data/Services/NetbootXYZ/Config:/config
+      - /docker/Data/Services/NetbootXYZ/Assets:/assets
+    ports:
+      - 3000:3000
+      - 69:69/udp
+      - 8180:80
+    restart: unless-stopped

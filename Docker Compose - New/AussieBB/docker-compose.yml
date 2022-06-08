@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  AussieBB_Usage:
+    container_name: AussieBB_Usage
+    image: aussiebb_usage:latest
+    external_links:
+      - InfluxDB:InfluxDB
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    env_file: 
+      - ./.senv
+    restart: unless-stopped
+    network_mode: bridge
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

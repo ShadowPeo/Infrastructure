@@ -1,1 +1,5 @@
 *.senv
+Docker Compose - New/Monitoring/UniFi-Poller/Config/unifi-poller.conf
+Docker Compose - New/Testing
+.DS_Store
+Docker Compose - New/UniFi-Poller/Config/unifi-poller.conf

@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  Grafana:
+    container_name: Grafana
+    image: grafana/grafana:latest
+    env_file: 
+      - .env
+    user: "1000"
+    volumes:
+      - ./Data:/var/lib/grafana
+    external_links:
+      - InfluxDB:InfluxDB
+    healthcheck:
+      test: curl --fail -s http://localhost:3000/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3000:3000
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"

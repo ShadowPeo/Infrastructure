@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  StatPing:
+    container_name: StatPing
+    image: statping/statping:latest
+    volumes:
+      - ./Data:/app
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
+    network_mode: bridge
+    ports:
+      - 6600:8080
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
