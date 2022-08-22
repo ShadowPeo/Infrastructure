@@ -1,0 +1,16 @@
+version: "3.6"
+
+services:
+  youtrack:
+    image: jetbrains/youtrack:2022.1.46592
+    container_name: YouTrack
+    hostname: abc.def.xyz
+    volumes:
+      - ./Data:/opt/youtrack/data
+      - ./Conf:/opt/youtrack/conf
+      - ./Logs:/opt/youtrack/logs
+      - ./Backups:/opt/youtrack/backups
+    ports:
+      - 8881:8080
+    networks:
+      - Public

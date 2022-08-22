@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+  app:
+    image: eugenci/papermerge:2.0.0
+    container_name: Papermerge_App
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./Data/Media:/opt/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+    env_file: 
+      - ./.senv
+  db:
+    image: postgres:12.3
+    container_name: postgres_db
+    volumes:
+      - ./Data/Postgres:/var/lib/postgresql/data/
+    env_file: 
+      - ./.senv
+  redis:
+    container_name: 'redis'
+    image: 'redis:6'
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - ./Data/Redis:/data'
+  worker:
+    image: eugenci/papermerge-worker:v2.0.0
+    container_name: papermerge_worker
+    volumes:
+      - ./Data/Media:/opt/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+    env_file: 
+      - ./.senv
