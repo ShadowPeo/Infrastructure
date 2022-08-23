@@ -1,0 +1,19 @@
+version: "2.1"
+services:
+  hammond:
+    image: akhilrex/hammond
+    container_name: Hammond
+    environment:
+      - JWT_SECRET=<<SUPERSECRET>>
+    volumes:
+      - ./Config:/config
+      - ./Data:/assets
+    ports:
+      - 3000:3000
+    networks:
+      - Public
+    restart: unless-stopped
+
+networks:
+  Public:
+    external: true

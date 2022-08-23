@@ -1,0 +1,28 @@
+version: "3.5"
+
+services:
+  ecodms:
+    image: ecodms/ecodms
+    container_name: ecoDMS_App
+    restart: always
+    ports:
+      - 17001:17001 # ecoDMS Access
+      - 17002:17002 # Database Access
+      - 17004:8080  # Web Access
+      - 17005:8180  # API Access
+    environment:
+      - LANG=eng # Language
+      - LANGUAGE = eng
+      - LC_ALL = eng
+    volumes:
+      - ./Data/Data:/srv/data
+      - ./Data/ScanInput:/srv/scaninput
+      - ./Data/Backup:/srv/backup
+      - ./Data/Restore:/srv/restore
+  db:
+    image: postgres:12.3
+    container_name: ecoDMS_DB
+    volumes:
+      - ./Data/Postgres:/var/lib/postgresql/data/
+    env_file: 
+      - ./.senv
