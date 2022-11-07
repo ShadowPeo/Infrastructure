@@ -1,0 +1,15 @@
+services:
+  fileflows:
+    image: revenz/fileflows
+    container_name: FileFlows
+    environment:
+      - TZ=Australia/Melbourne
+    volumes:
+      - /mnt/user/Docker/FileFlows/Data:/app/Data
+      - /mnt/user/Docker/FileFlows/Logs:/app/Logs
+      - /mnt/user/Docker/FileFlows/Media:/media  #optional #Move to Cache Drives
+    ports:
+      - 5000:5000
+    restart: unless-stopped
+
+  #Documentation: https://docs.fileflows.com/
