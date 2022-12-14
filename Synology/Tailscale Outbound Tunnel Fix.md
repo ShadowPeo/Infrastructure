@@ -9,6 +9,6 @@ sudo mknod /dev/net/tun c 10 200
 sudo chmod 0666 /dev/net/tun
 
 # Persist the /dev/net/tun settings - Use this as a user defined script after restart
-/var/packages/Tailscale/target/bin/tailscale configure-host
+sudo /var/packages/Tailscale/target/bin/tailscale configure-host
 
 sudo synosystemctl restart pkgctl-Tailscale.service
