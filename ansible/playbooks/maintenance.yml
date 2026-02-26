@@ -1,0 +1,33 @@
+---
+# Run standard maintenance tasks on Linux hosts
+# Usage: ansible-playbook playbooks/maintenance.yml
+#        ansible-playbook playbooks/maintenance.yml --check   (dry run)
+#        ansible-playbook playbooks/maintenance.yml --limit docker_hosts
+
+- name: Maintain Ubuntu/Debian hosts
+  hosts: ubuntu:docker_hosts:raspberry_pi
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        upgrade: dist
+
+    - name: Remove unused packages
+      ansible.builtin.apt:
+        autoremove: true
+
+    - name: Check if reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Notify if reboot needed
+      ansible.builtin.debug:
+        msg: "REBOOT REQUIRED on {{ ansible_hostname }}"
+      when: reboot_required.stat.exists
