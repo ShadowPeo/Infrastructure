@@ -1,0 +1,13 @@
+---
+# Ansible Galaxy dependencies
+# Install with: ansible-galaxy install -r requirements.yml
+
+collections:
+  - name: ansible.windows
+  - name: community.windows
+  - name: community.general
+  - name: community.docker
+
+roles:
+  - name: geerlingguy.docker
+  - name: artis3n.tailscale
