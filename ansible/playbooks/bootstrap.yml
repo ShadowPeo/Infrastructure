@@ -33,11 +33,13 @@
     - name: Gather host group memberships
       ansible.builtin.getent:
         database: group
+      register: host_groups
       tags: [users, hardening]
 
     - name: Gather existing users
       ansible.builtin.getent:
         database: passwd
+      register: host_users
       tags: [users]
 
     - name: Create ACL groups
@@ -55,7 +57,7 @@
         name: "{{ item.username }}"
         gid: "{{ item.gid | default(omit) }}"
         state: present
-      when: item.username not in ansible_facts.getent_passwd
+      when: item.username not in host_users.ansible_facts.getent_passwd
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
@@ -70,7 +72,7 @@
         shell: /bin/bash
         create_home: true
         state: "{{ item.state | default('present') }}"
-      when: item.username not in ansible_facts.getent_passwd
+      when: item.username not in host_users.ansible_facts.getent_passwd
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
@@ -82,7 +84,7 @@
         comment: "{{ item.fullname | default(omit) }}"
         shell: /bin/bash
         state: "{{ item.state | default('present') }}"
-      when: item.username in ansible_facts.getent_passwd
+      when: item.username in host_users.ansible_facts.getent_passwd
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
@@ -95,7 +97,7 @@
         append: true
       when:
         - item.0.state | default('present') == 'present'
-        - item.1 in ansible_facts.getent_group
+        - item.1 in host_groups.ansible_facts.getent_group
       loop: "{{ managed_users | product(user_optional_groups | default([])) | list }}"
       loop_control:
         label: "{{ item.0.username }} -> {{ item.1 }}"
