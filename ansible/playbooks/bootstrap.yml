@@ -1,0 +1,43 @@
+---
+# Bootstrap playbook - run once on a new host to set up managed users,
+# deploy SSH keys, configure sudo, and harden SSH.
+#
+# Must be run with the deployment/break-glass account:
+#   ansible-playbook playbooks/bootstrap.yml -u sysadmin -k -K
+#
+# After this runs, all subsequent playbooks use the ansible service account
+# with key-based auth - no password flags needed.
+
+- name: Bootstrap host
+  hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Create managed users
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        shell: /bin/bash
+        create_home: true
+        state: present
+      loop: "{{ managed_users }}"
+
+    - name: Deploy SSH authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ item.username }}"
+        key: "{{ item.ssh_key }}"
+        state: present
+      loop: "{{ managed_users }}"
+      when: item.ssh_key is defined
+
+    - name: Configure passwordless sudo for admin users
+      ansible.builtin.lineinfile:
+        path: "/etc/sudoers.d/{{ item.username }}"
+        line: "{{ item.username }} ALL=(ALL) NOPASSWD:ALL"
+        create: true
+        mode: '0440'
+        validate: 'visudo -cf %s'
+      loop: "{{ managed_users }}"
+      when: item.sudo | default(false)
+
+  roles:
+    - role: devsec.hardening.ssh_hardening
