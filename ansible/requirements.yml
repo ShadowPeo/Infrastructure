@@ -8,6 +8,7 @@ collections:
   - name: community.general
   - name: community.docker
   - name: ansible.posix
+    version: ">=1.5.4"
   - name: devsec.hardening
 
 roles:
