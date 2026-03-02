@@ -139,16 +139,18 @@
       when: item.sudo | default(false)
       tags: [users]
 
-  roles:
-    - role: devsec.hardening.ssh_hardening
+  tasks:
+    # Ubuntu uses ssh.socket (socket activation) which keeps the old sshd
+    # process running. This causes the devsec restart handler to fail with
+    # 'Address already in use'. Disable it so sshd runs as a proper service.
+    - name: Disable SSH socket activation
+      ansible.builtin.systemd:
+        name: ssh.socket
+        state: stopped
+        enabled: false
+      ignore_errors: true   # doesn't exist on all Ubuntu versions
       tags: [hardening]
 
-  post_tasks:
-    # Ubuntu socket activation leaves the old sshd process running, causing
-    # 'Address already in use' when the devsec handler tries a full restart.
-    # A reload (SIGHUP) applies the new config without rebinding the port.
-    - name: Reload sshd to apply hardened config
-      ansible.builtin.systemd:
-        name: ssh
-        state: reloaded
+  roles:
+    - role: devsec.hardening.ssh_hardening
       tags: [hardening]
