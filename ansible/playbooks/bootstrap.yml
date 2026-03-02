@@ -2,15 +2,18 @@
 # Bootstrap playbook - run once on a new host to set up managed users,
 # deploy SSH keys, configure sudo, and harden SSH.
 #
-# Must be run with the deployment/break-glass account:
-#   ansible-playbook playbooks/bootstrap.yml -u sysadmin -k -K
+# Run in two phases to avoid losing SSH access mid-play:
 #
-# After this runs, all subsequent playbooks use the ansible service account
-# with key-based auth - no password flags needed.
+#   Phase 1 - as break-glass account, password auth:
+#     ansible-playbook bootstrap.yml -u sysadmin -k -K --skip-tags hardening
+#
+#   Phase 2 - as your own account or ansible service account, key auth:
+#     ansible-playbook bootstrap.yml --tags hardening
 #
 # Expected variables (define in group_vars/all/users.yml):
 #   managed_users:        list of user objects (see below)
 #   user_optional_groups: list of groups applied to all users if they exist on the host
+#   managed_groups:       list of ACL groups to create
 #
 # User object fields:
 #   username:   (required) login name
@@ -30,10 +33,12 @@
     - name: Gather host group memberships
       ansible.builtin.getent:
         database: group
+      tags: [users, hardening]
 
     - name: Gather existing users
       ansible.builtin.getent:
         database: passwd
+      tags: [users]
 
     - name: Create ACL groups
       ansible.builtin.group:
@@ -43,6 +48,7 @@
       loop: "{{ managed_groups | default([]) }}"
       loop_control:
         label: "{{ item.name }}"
+      tags: [users]
 
     - name: Create primary groups for new users
       ansible.builtin.group:
@@ -53,6 +59,7 @@
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
+      tags: [users]
 
     - name: Create new managed users (with UID/GID)
       ansible.builtin.user:
@@ -67,6 +74,7 @@
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
+      tags: [users]
 
     - name: Update existing users (shell, comment only - never change UID)
       ansible.builtin.user:
@@ -78,6 +86,7 @@
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
+      tags: [users]
 
     - name: Add users to optional groups (if group exists on this host)
       ansible.builtin.user:
@@ -90,6 +99,7 @@
       loop: "{{ managed_users | product(user_optional_groups | default([])) | list }}"
       loop_control:
         label: "{{ item.0.username }} -> {{ item.1 }}"
+      tags: [users]
 
     - name: Add per-user extra groups
       ansible.builtin.user:
@@ -100,6 +110,7 @@
       loop: "{{ managed_users | subelements('groups', skip_missing=True) }}"
       loop_control:
         label: "{{ item.0.username }} -> {{ item.1 }}"
+      tags: [users]
 
     - name: Deploy SSH authorized keys
       ansible.posix.authorized_key:
@@ -111,6 +122,7 @@
       loop: "{{ managed_users | subelements('ssh_keys', skip_missing=True) }}"
       loop_control:
         label: "{{ item.0.username }}"
+      tags: [users]
 
     - name: Configure passwordless sudo for admin users
       ansible.builtin.lineinfile:
@@ -123,6 +135,8 @@
       loop_control:
         label: "{{ item.username }}"
       when: item.sudo | default(false)
+      tags: [users]
 
   roles:
     - role: devsec.hardening.ssh_hardening
+      tags: [hardening]
