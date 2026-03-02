@@ -34,7 +34,7 @@
       ansible.builtin.getent:
         database: group
       register: host_groups
-      tags: [users, hardening]
+      tags: [users]
 
     - name: Gather existing users
       ansible.builtin.getent:
