@@ -14,7 +14,8 @@
 #
 # User object fields:
 #   username:   (required) login name
-#   uid:        (optional) numeric UID
+#   uid:        (optional) numeric UID - only applied on creation, never changed
+#   gid:        (optional) numeric primary GID - only applied on creation, never changed
 #   fullname:   (optional) GECOS comment field
 #   sudo:       (optional) true = passwordless sudoers.d entry
 #   groups:     (optional) list of extra groups beyond user_optional_groups
@@ -30,14 +31,50 @@
       ansible.builtin.getent:
         database: group
 
-    - name: Create managed users
+    - name: Gather existing users
+      ansible.builtin.getent:
+        database: passwd
+
+    - name: Create ACL groups
+      ansible.builtin.group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid | default(omit) }}"
+        state: present
+      loop: "{{ managed_groups | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Create primary groups for new users
+      ansible.builtin.group:
+        name: "{{ item.username }}"
+        gid: "{{ item.gid | default(omit) }}"
+        state: present
+      when: item.username not in ansible_facts.getent_passwd
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Create new managed users (with UID/GID)
       ansible.builtin.user:
         name: "{{ item.username }}"
         uid: "{{ item.uid | default(omit) }}"
+        group: "{{ item.username }}"
         comment: "{{ item.fullname | default(omit) }}"
         shell: /bin/bash
         create_home: true
         state: "{{ item.state | default('present') }}"
+      when: item.username not in ansible_facts.getent_passwd
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Update existing users (shell, comment only - never change UID)
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        comment: "{{ item.fullname | default(omit) }}"
+        shell: /bin/bash
+        state: "{{ item.state | default('present') }}"
+      when: item.username in ansible_facts.getent_passwd
       loop: "{{ managed_users }}"
       loop_control:
         label: "{{ item.username }}"
