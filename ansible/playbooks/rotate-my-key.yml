@@ -1,0 +1,45 @@
+---
+# Rotate or update your personal SSH authorized key on managed hosts.
+# Run this when you get a new key or want to ensure your key is current.
+#
+# Requires 'my_ssh_public_key' to be set - pass it at runtime:
+#   ansible-playbook playbooks/rotate-my-key.yml \
+#     -e "my_username=st00605" \
+#     -e "my_ssh_public_key='ssh-ed25519 AAAA...'"
+#
+# Or define my_ssh_public_key in group_vars and just pass my_username.
+# The playbook adds the key if absent, updates it if changed.
+# It does NOT remove other authorized keys for the user.
+
+- name: Update personal SSH authorized key
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Ensure user exists
+      ansible.builtin.user:
+        name: "{{ my_username }}"
+        state: present
+
+    - name: Check current authorized keys
+      ansible.builtin.slurp:
+        src: "/home/{{ my_username }}/.ssh/authorized_keys"
+      register: current_keys
+      ignore_errors: true
+
+    - name: Show current keys on host
+      ansible.builtin.debug:
+        msg: "{{ current_keys.content | b64decode }}"
+      when: current_keys is not failed
+
+    - name: Deploy updated authorized key
+      ansible.posix.authorized_key:
+        user: "{{ my_username }}"
+        key: "{{ my_ssh_public_key }}"
+        state: present
+        exclusive: false
+      register: key_result
+
+    - name: Report result
+      ansible.builtin.debug:
+        msg: "{{ 'Key updated on ' + ansible_hostname if key_result.changed else 'Key already current on ' + ansible_hostname }}"

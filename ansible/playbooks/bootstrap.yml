@@ -7,27 +7,73 @@
 #
 # After this runs, all subsequent playbooks use the ansible service account
 # with key-based auth - no password flags needed.
+#
+# Expected variables (define in group_vars/all/users.yml):
+#   managed_users:        list of user objects (see below)
+#   user_optional_groups: list of groups applied to all users if they exist on the host
+#
+# User object fields:
+#   username:   (required) login name
+#   uid:        (optional) numeric UID
+#   fullname:   (optional) GECOS comment field
+#   sudo:       (optional) true = passwordless sudoers.d entry
+#   groups:     (optional) list of extra groups beyond user_optional_groups
+#   ssh_keys:   (optional) list of authorised public keys
+#   state:      (optional) present (default) or absent
 
 - name: Bootstrap host
   hosts: all
   become: true
 
   pre_tasks:
+    - name: Gather host group memberships
+      ansible.builtin.getent:
+        database: group
+
     - name: Create managed users
       ansible.builtin.user:
         name: "{{ item.username }}"
+        uid: "{{ item.uid | default(omit) }}"
+        comment: "{{ item.fullname | default(omit) }}"
         shell: /bin/bash
         create_home: true
-        state: present
+        state: "{{ item.state | default('present') }}"
       loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Add users to optional groups (if group exists on this host)
+      ansible.builtin.user:
+        name: "{{ item.0.username }}"
+        groups: "{{ item.1 }}"
+        append: true
+      when:
+        - item.0.state | default('present') == 'present'
+        - item.1 in ansible_facts.getent_group
+      loop: "{{ managed_users | product(user_optional_groups | default([])) | list }}"
+      loop_control:
+        label: "{{ item.0.username }} -> {{ item.1 }}"
+
+    - name: Add per-user extra groups
+      ansible.builtin.user:
+        name: "{{ item.0.username }}"
+        groups: "{{ item.1 }}"
+        append: true
+      when: item.0.state | default('present') == 'present'
+      loop: "{{ managed_users | subelements('groups', skip_missing=True) }}"
+      loop_control:
+        label: "{{ item.0.username }} -> {{ item.1 }}"
 
     - name: Deploy SSH authorized keys
       ansible.posix.authorized_key:
-        user: "{{ item.username }}"
-        key: "{{ item.ssh_key }}"
+        user: "{{ item.0.username }}"
+        key: "{{ item.1 }}"
         state: present
-      loop: "{{ managed_users }}"
-      when: item.ssh_key is defined
+        exclusive: false
+      when: item.0.state | default('present') == 'present'
+      loop: "{{ managed_users | subelements('ssh_keys', skip_missing=True) }}"
+      loop_control:
+        label: "{{ item.0.username }}"
 
     - name: Configure passwordless sudo for admin users
       ansible.builtin.lineinfile:
@@ -37,6 +83,8 @@
         mode: '0440'
         validate: 'visudo -cf %s'
       loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
       when: item.sudo | default(false)
 
   roles:
