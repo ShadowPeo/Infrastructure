@@ -2,10 +2,10 @@
 # Platform-wide SSH defaults - apply to all sites running these playbooks.
 # Override in a more specific group (e.g. group_vars/ubuntu/) if a site needs to differ.
 
-# Raised from default of 6 to accommodate multiple keys in SSH agent (Bitwarden).
+# Raised from default of 2 to accommodate multiple keys in SSH agent (Bitwarden).
 # TODO: reduce to 12 once excess keys are cleaned up.
-ssh_max_auth_tries: 20
+ssh_max_auth_retries: 20
 
 # Required for VSCode Remote SSH (port forwarding / tunnel)
 ssh_allow_tcp_forwarding: "yes"
-ssh_allow_agent_forwarding: "yes"
+ssh_allow_agent_forwarding: true
