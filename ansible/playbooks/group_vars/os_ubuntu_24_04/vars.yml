@@ -1,0 +1,6 @@
+---
+# Ubuntu 24.04 uses systemd socket activation for sshd. Restarting ssh.service while
+# ssh.socket still holds port 22 causes "Address already in use" in the devsec handler.
+# Setting ssh_manage_service: false tells devsec to write the config but not restart
+# the service. The reboot at the end of bootstrap applies the config cleanly instead.
+ssh_manage_service: false

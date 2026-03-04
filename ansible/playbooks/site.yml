@@ -1,0 +1,15 @@
+---
+# App stack playbook - run against already-hardened hosts to deploy/update services.
+# Runs maintenance first, then installs Docker and Tailscale on their respective groups.
+# Hosts not in docker_hosts or tailscale groups are silently skipped for those plays.
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml -i <inventory>
+#   ansible-playbook playbooks/site.yml -i <inventory> -e reboot_on_completion=false
+
+- import_playbook: users.yml
+- import_playbook: maintenance.yml
+- import_playbook: docker.yml
+- import_playbook: tailscale.yml
+- import_playbook: cockpit.yml
+- import_playbook: reboot.yml

@@ -1,0 +1,9 @@
+---
+# Docker hosts require IP forwarding for container networking.
+# sysctl_overwrite merges with devsec's sysctl_config rather than replacing it.
+sysctl_overwrite:
+  net.ipv4.ip_forward: 1
+  net.ipv6.conf.all.forwarding: 1
+
+# UFW drops forwarded packets by default which breaks Docker networking.
+ufw_default_forward_policy: ACCEPT

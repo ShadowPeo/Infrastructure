@@ -1,14 +1,54 @@
 ---
-# Run standard maintenance tasks on Linux hosts
-# Usage: ansible-playbook playbooks/maintenance.yml
-#        ansible-playbook playbooks/maintenance.yml --check   (dry run)
-#        ansible-playbook playbooks/maintenance.yml --limit docker_hosts
+# Run standard maintenance tasks on Linux hosts.
+# Hosts in zabbix_hosts get their configs backed up to /backup/<date>_<filename>
+# before upgrade, as Zabbix packages overwrite config files on upgrade.
+#
+# Usage:
+#   ansible-playbook playbooks/maintenance.yml -i <inventory>
+#   ansible-playbook playbooks/maintenance.yml -i <inventory> --limit zabbix_hosts
+#   ansible-playbook playbooks/maintenance.yml -i <inventory> --check
 
 - name: Maintain Ubuntu/Debian hosts
   hosts: ubuntu:docker_hosts:raspberry_pi
   become: true
 
   tasks:
+    # --- Zabbix pre-upgrade backup ---
+    - name: Ensure /backup directory exists
+      ansible.builtin.file:
+        path: /backup
+        state: directory
+        owner: root
+        group: root
+        mode: '0750'
+      when: "'zabbix_hosts' in group_names"
+
+    - name: Check which Zabbix config files exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/zabbix/zabbix_agentd.conf
+        - /etc/zabbix/zabbix_server.conf
+        - /etc/zabbix/apache.conf
+        - /etc/zabbix/nginx.conf
+        - /etc/zabbix/web/zabbix.conf.php
+      register: zabbix_config_stat
+      when: "'zabbix_hosts' in group_names"
+
+    - name: Back up Zabbix configs to /backup with ISO date prefix
+      ansible.builtin.copy:
+        src: "{{ item.item }}"
+        dest: "/backup/{{ ansible_facts['date_time']['date'] }}_{{ item.item | basename }}"
+        remote_src: true
+        mode: preserve
+      loop: "{{ zabbix_config_stat.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item | basename }}"
+      when:
+        - "'zabbix_hosts' in group_names"
+        - item.stat.exists
+
+    # --- Standard maintenance ---
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: true
@@ -22,6 +62,7 @@
       ansible.builtin.apt:
         autoremove: true
 
+    # --- Reboot check ---
     - name: Check if reboot is required
       ansible.builtin.stat:
         path: /var/run/reboot-required
@@ -29,5 +70,5 @@
 
     - name: Notify if reboot needed
       ansible.builtin.debug:
-        msg: "REBOOT REQUIRED on {{ ansible_hostname }}"
+        msg: "REBOOT REQUIRED on {{ ansible_facts['hostname'] }}"
       when: reboot_required.stat.exists

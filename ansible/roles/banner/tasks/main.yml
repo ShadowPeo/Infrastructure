@@ -1,0 +1,11 @@
+---
+- name: Deploy login banner (issue.net + motd)
+  ansible.builtin.copy:
+    content: "{{ banner_text if banner_text else lookup('template', 'banner.j2') }}"
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - /etc/issue.net
+    - /etc/motd

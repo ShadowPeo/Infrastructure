@@ -1,0 +1,187 @@
+---
+# User management playbook - the authoritative source for user state on all managed hosts.
+# Idempotent - run at any time to enforce state. Suitable for Semaphore automation
+# triggered by commits to the site inventory users.yml.
+#
+# On first run use bootstrap.yml (wrapper with password auth instructions).
+# Ongoing: run directly with key auth, or trigger via Semaphore.
+#
+# Expected variables (define in site inventory/group_vars/all/users.yml):
+#   managed_users:        list of user objects
+#   user_optional_groups: list of groups applied to all users if they exist on the host
+#   managed_groups:       list of ACL groups to create
+#
+# User object fields:
+#   username:   (required) login name
+#   uid:        (optional) numeric UID - only applied on creation, never changed
+#   gid:        (optional) numeric primary GID - only applied on creation, never changed
+#   fullname:   (optional) GECOS comment field
+#   sudo:       (optional) true = passwordless sudoers.d entry
+#   groups:     (optional) list of extra groups beyond user_optional_groups
+#   ssh_keys:   (optional) list of authorised public keys
+#   state:      (optional) present (default) or absent - mark absent rather than deleting
+
+- name: Manage users
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Group hosts by OS distribution and version
+      ansible.builtin.group_by:
+        key: "os_{{ ansible_facts['distribution'] | lower }}_{{ ansible_facts['distribution_version'] | replace('.', '_') }}"
+
+    - name: Gather host group memberships
+      ansible.builtin.getent:
+        database: group
+      register: host_groups
+
+    - name: Gather existing users
+      ansible.builtin.getent:
+        database: passwd
+      register: host_users
+
+    # --- Groups ---
+    - name: Create ACL groups
+      ansible.builtin.group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid | default(omit) }}"
+        state: present
+      loop: "{{ managed_groups | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Create primary groups for new users
+      ansible.builtin.group:
+        name: "{{ item.username }}"
+        gid: "{{ item.gid | default(omit) }}"
+        state: present
+      when: item.username not in host_users.ansible_facts.getent_passwd
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    # --- Users ---
+    - name: Create new managed users (with UID/GID)
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid | default(omit) }}"
+        group: "{{ item.username }}"
+        comment: "{{ item.fullname | default(omit) }}"
+        shell: /bin/bash
+        create_home: true
+        state: "{{ item.state | default('present') }}"
+      when: item.username not in host_users.ansible_facts.getent_passwd
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Update existing users (shell, comment only - never change UID)
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        comment: "{{ item.fullname | default(omit) }}"
+        shell: /bin/bash
+        state: "{{ item.state | default('present') }}"
+      when: item.username in host_users.ansible_facts.getent_passwd
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Add users to optional groups (if group exists on this host)
+      ansible.builtin.user:
+        name: "{{ item.0.username }}"
+        groups: "{{ item.1 }}"
+        append: true
+      when:
+        - item.0.state | default('present') == 'present'
+        - item.1 in host_groups.ansible_facts.getent_group
+      loop: "{{ managed_users | product(user_optional_groups | default([])) | list }}"
+      loop_control:
+        label: "{{ item.0.username }} -> {{ item.1 }}"
+
+    - name: Add per-user extra groups
+      ansible.builtin.user:
+        name: "{{ item.0.username }}"
+        groups: "{{ item.1 }}"
+        append: true
+      when: item.0.state | default('present') == 'present'
+      loop: "{{ managed_users | subelements('groups', skip_missing=True) }}"
+      loop_control:
+        label: "{{ item.0.username }} -> {{ item.1 }}"
+
+    # --- SSH keys ---
+    - name: Deploy SSH authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ item.0.username }}"
+        key: "{{ item.1 }}"
+        state: present
+        exclusive: false
+      when: item.0.state | default('present') == 'present'
+      loop: "{{ managed_users | subelements('ssh_keys', skip_missing=True) }}"
+      loop_control:
+        label: "{{ item.0.username }}"
+
+    # --- Sudo ---
+    - name: Configure passwordless sudo for admin users
+      ansible.builtin.lineinfile:
+        path: "/etc/sudoers.d/{{ item.username }}"
+        line: "{{ item.username }} ALL=(ALL) NOPASSWD:ALL"
+        create: true
+        mode: '0440'
+        validate: 'visudo -cf %s'
+      when: item.sudo | default(false)
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    # --- User removal (state: absent) ---
+    - name: Check for home directories of users being removed
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}"
+      loop: "{{ managed_users | selectattr('state', 'equalto', 'absent') | list }}"
+      loop_control:
+        label: "{{ item.username }}"
+      register: absent_home_stat
+
+    - name: Ensure user archive directory exists
+      ansible.builtin.file:
+        path: /archive/users
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+      when: absent_home_stat.results | selectattr('stat.exists', 'equalto', true) | list | length > 0
+
+    - name: Archive home directory of removed users
+      ansible.builtin.command:
+        cmd: "mv /home/{{ item.item.username }} /archive/users/{{ ansible_facts['date_time']['date'] }}_{{ item.item.username }}"
+      loop: "{{ absent_home_stat.results }}"
+      loop_control:
+        label: "{{ item.item.username }}"
+      when: item.stat.exists
+      changed_when: true
+
+    - name: Strip execute bits from files in archived home directories
+      ansible.builtin.command:
+        cmd: "find /archive/users/{{ ansible_facts['date_time']['date'] }}_{{ item.item.username }} -type f -exec chmod a-x {} +"
+      loop: "{{ absent_home_stat.results }}"
+      loop_control:
+        label: "{{ item.item.username }}"
+      when: item.stat.exists
+      changed_when: true
+
+    - name: Remove sudoers entries for removed users
+      ansible.builtin.file:
+        path: "/etc/sudoers.d/{{ item.username }}"
+        state: absent
+      loop: "{{ managed_users | selectattr('state', 'equalto', 'absent') | list }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    - name: Remove user accounts marked as absent
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        state: absent
+        remove: false
+      loop: "{{ managed_users | selectattr('state', 'equalto', 'absent') | list }}"
+      loop_control:
+        label: "{{ item.username }}"

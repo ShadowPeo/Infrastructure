@@ -1,0 +1,16 @@
+---
+# Full new-host provisioning chain.
+# Run after bootstrap.yml completes (users and keys already in place).
+# Runs maintenance first, then hardens, then installs the app stack.
+# Hosts not in docker_hosts or tailscale groups are silently skipped for those plays.
+#
+# Usage:
+#   ansible-playbook playbooks/provision.yml -i <inventory> -e reboot_on_completion=false
+
+- import_playbook: users.yml
+- import_playbook: maintenance.yml
+- import_playbook: harden.yml
+- import_playbook: docker.yml
+- import_playbook: tailscale.yml
+- import_playbook: cockpit.yml
+- import_playbook: reboot.yml

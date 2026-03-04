@@ -1,0 +1,13 @@
+---
+# Install and connect Tailscale on hosts in the tailscale group.
+# Uses artis3n.tailscale Galaxy role (Linux only - Windows hosts need separate handling).
+#
+# Required secret (define in site inventory/group_vars/all/vault.yml, encrypted):
+#   tailscale_authkey: "tskey-auth-..."
+
+- name: Install Tailscale
+  hosts: tailscale
+  become: true
+
+  roles:
+    - role: artis3n.tailscale

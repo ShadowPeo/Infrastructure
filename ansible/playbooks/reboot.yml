@@ -1,0 +1,17 @@
+---
+# Standalone reboot playbook. Use at the end of a chained run when
+# bootstrap (and other playbooks) were run with -e reboot_on_completion=false.
+#
+# Example chain:
+#   ansible-playbook bootstrap.yml --tags hardening -e reboot_on_completion=false
+#   ansible-playbook docker.yml -e reboot_on_completion=false
+#   ansible-playbook reboot.yml
+
+- name: Reboot host and wait for reconnection
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300

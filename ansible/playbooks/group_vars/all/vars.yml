@@ -9,3 +9,36 @@ ssh_max_auth_retries: 20
 # Required for VSCode Remote SSH (port forwarding / tunnel)
 ssh_allow_tcp_forwarding: "yes"
 ssh_allow_agent_forwarding: true
+
+# Derive docker group members from managed_users - all present users get docker group access.
+# Relies on managed_users being defined in the site's inventory/group_vars/all/users.yml.
+# No need to maintain a separate list; add/remove users in users.yml and this follows.
+docker_users: "{{ managed_users | rejectattr('state', 'equalto', 'absent') | map(attribute='username') | list }}"
+
+# --- OS Hardening (devsec.hardening.os_hardening) ---
+
+# squashfs is required for Ubuntu snap packages (system snaps are pre-installed).
+# vfat is added dynamically by harden.yml on UEFI systems; statically in raspberry_pi group_vars.
+os_filesystem_whitelist:
+  - squashfs
+
+# Exclude service accounts from password ageing enforcement - they use SSH keys only.
+os_users_without_password_ageing:
+  - ansible
+
+# Idle session timeout in seconds. Disabled (0) - VSCode Remote sessions are long-lived
+# and would be killed mid-session. Access is key-auth only so risk is already low.
+os_security_auto_logout: 0
+
+# PAM no_pass_expiry is included in devsec's default PAM template, so SSH key logins
+# are not blocked by password expiry. Only relevant if using a custom PAM config.
+
+# --- Reboot control ---
+# Defaults to false - no reboot unless explicitly requested.
+# Override on the command line: -e reboot_on_completion=true
+reboot_on_completion: false
+
+# Enable pre-authentication SSH banner and point it at the file written by the banner role.
+# devsec uses ssh_banner (bool) to enable it and ssh_banner_path for the file location.
+ssh_banner: true
+ssh_banner_path: /etc/issue.net

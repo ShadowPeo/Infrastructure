@@ -1,0 +1,67 @@
+---
+# Update a Docker Compose application: backup current state, pull latest images, restart.
+# Requires sudo due to file ownership under /docker.
+#
+# If the pull or restart fails, the rescue block attempts to bring containers back up
+# on the existing images so the service is not left down.
+#
+# Required variable:
+#   app_name: folder name under /docker (e.g. snipeit, unimus)
+#
+# Usage:
+#   ansible-playbook playbooks/docker-app-update.yml -i <inventory> -e app_name=snipeit
+#   ansible-playbook playbooks/docker-app-update.yml -i <inventory> -e app_name=unimus
+#   ansible-playbook playbooks/docker-app-update.yml -i <inventory> -e app_name=snipeit --limit 7893RPX02
+
+- name: Update Docker Compose application
+  hosts: docker_hosts
+  become: true
+
+  vars:
+    app_dir: "/docker/{{ app_name }}"
+    backup_dir: "/docker/{{ ansible_facts['date_time']['date'] }}_{{ app_name }}.bak"
+
+  pre_tasks:
+    - name: Verify app_name variable is set
+      ansible.builtin.fail:
+        msg: "app_name is required. Pass it with -e app_name=<folder>"
+      when: app_name is not defined
+
+    - name: Verify application directory exists
+      ansible.builtin.stat:
+        path: "{{ app_dir }}"
+      register: app_dir_stat
+
+    - name: Fail if application directory does not exist
+      ansible.builtin.fail:
+        msg: "Directory {{ app_dir }} does not exist on this host"
+      when: not app_dir_stat.stat.exists
+
+  tasks:
+    - name: Stop and remove containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        state: absent
+
+    - name: Back up application directory
+      ansible.builtin.command:
+        cmd: "cp -rp {{ app_dir }} {{ backup_dir }}"
+      changed_when: true
+
+    - block:
+        - name: Pull latest images and start containers
+          community.docker.docker_compose_v2:
+            project_src: "{{ app_dir }}"
+            state: present
+            pull: always
+
+      rescue:
+        - name: Pull failed - restarting on existing images
+          ansible.builtin.debug:
+            msg: "Image pull failed for {{ app_name }}. Starting on existing images. Check {{ backup_dir }} for last known good state."
+
+        - name: Start containers on existing images
+          community.docker.docker_compose_v2:
+            project_src: "{{ app_dir }}"
+            state: present
+            pull: never

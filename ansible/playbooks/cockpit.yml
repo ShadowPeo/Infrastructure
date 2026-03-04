@@ -1,0 +1,23 @@
+---
+# Install Cockpit web-based management interface on Ubuntu hosts.
+# Accessible at https://<host>:9090 after installation.
+#
+# Usage:
+#   ansible-playbook playbooks/cockpit.yml -i <inventory>
+
+- name: Install Cockpit
+  hosts: ubuntu
+  become: true
+
+  tasks:
+    - name: Install Cockpit
+      ansible.builtin.apt:
+        name: cockpit
+        state: present
+        update_cache: true
+
+    - name: Enable and start Cockpit socket
+      ansible.builtin.service:
+        name: cockpit.socket
+        enabled: true
+        state: started

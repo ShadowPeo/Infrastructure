@@ -1,0 +1,6 @@
+---
+# Raspberry Pi boot partition is always FAT32 (vfat), regardless of UEFI status.
+# The UEFI detection in harden.yml covers UEFI Pis, but non-UEFI Pis still need vfat.
+os_filesystem_whitelist:
+  - squashfs  # inherited intent from all group
+  - vfat

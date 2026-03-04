@@ -1,0 +1,31 @@
+---
+# Install Docker CE on hosts in the docker_hosts group.
+# Uses geerlingguy.docker Galaxy role.
+#
+# To defer reboot when chaining playbooks:
+#   ansible-playbook docker.yml -e reboot_on_completion=false
+#
+# docker_users is derived automatically from managed_users (platform group_vars).
+# No separate list needed - manage users in users.yml and docker group membership follows.
+
+- name: Install Docker
+  hosts: docker_hosts
+  become: true
+
+  roles:
+    - role: geerlingguy.docker
+
+  post_tasks:
+    - name: Ensure /docker directory exists with correct ownership
+      ansible.builtin.file:
+        path: /docker
+        state: directory
+        owner: ansible
+        group: docker
+        mode: '0755'
+        recurse: true
+
+    - name: Reboot to apply Docker configuration
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+      when: reboot_on_completion | default(false) | bool

@@ -1,0 +1,46 @@
+---
+# Hardening playbook - run after bootstrap.yml completes, using key auth.
+# Applies OS hardening, SSH hardening, and deploys the login banner.
+# Normally run as part of provision.yml rather than directly.
+#
+# Usage (standalone):
+#   ansible-playbook playbooks/harden.yml -i <inventory>
+#   ansible-playbook playbooks/harden.yml -i <inventory> -e reboot_on_completion=false
+
+- name: Harden host
+  hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Group hosts by OS distribution and version
+      ansible.builtin.group_by:
+        key: "os_{{ ansible_facts['distribution'] | lower }}_{{ ansible_facts['distribution_version'] | replace('.', '_') }}"
+      tags: [always]
+
+    - name: Check if system is UEFI booted
+      ansible.builtin.stat:
+        path: /sys/firmware/efi
+      register: efi_check
+
+    - name: Whitelist vfat on UEFI systems (required for EFI System Partition)
+      ansible.builtin.set_fact:
+        os_filesystem_whitelist: "{{ (os_filesystem_whitelist | default([])) + ['vfat'] }}"
+      when:
+        - efi_check.stat.exists
+        - "'vfat' not in (os_filesystem_whitelist | default([]))"
+
+    - name: Enable emergency sysrq on bare metal (sync + remount-ro + reboot)
+      ansible.builtin.set_fact:
+        sysctl_overwrite: "{{ sysctl_overwrite | default({}) | combine({'kernel.sysrq': 176}) }}"
+      when: ansible_facts['virtualization_role'] | default('NA') != 'guest'
+
+  roles:
+    - role: banner
+    - role: devsec.hardening.os_hardening
+    - role: devsec.hardening.ssh_hardening
+
+  post_tasks:
+    - name: Reboot to apply hardening configuration
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+      when: reboot_on_completion | default(false) | bool
