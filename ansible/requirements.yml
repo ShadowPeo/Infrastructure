@@ -7,6 +7,7 @@ collections:
   - name: community.windows
   - name: community.general
   - name: community.docker
+  - name: community.sops
   - name: ansible.posix
     version: ">=1.5.4"
   - name: devsec.hardening
