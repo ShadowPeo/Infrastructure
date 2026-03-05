@@ -1,0 +1,14 @@
+---
+# Configure NTP on Linux hosts via geerlingguy.ntp.
+# Servers default to pool.ntp.org in platform group_vars/all/vars.yml.
+# Override ntp_servers in a site's inventory/group_vars/all/vars.yml for site-specific sources.
+#
+# Usage:
+#   ansible-playbook playbooks/ntp.yml -i <inventory>
+
+- name: Configure NTP on Linux hosts
+  hosts: ubuntu:debian:docker_hosts:raspberry_pi
+  become: true
+
+  roles:
+    - role: geerlingguy.ntp

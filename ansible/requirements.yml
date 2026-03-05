@@ -13,4 +13,5 @@ collections:
 
 roles:
   - name: geerlingguy.docker
+  - name: geerlingguy.ntp
   - name: artis3n.tailscale

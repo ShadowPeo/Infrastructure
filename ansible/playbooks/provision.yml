@@ -9,6 +9,7 @@
 
 - import_playbook: users.yml
 - import_playbook: maintenance.yml
+- import_playbook: ntp.yml
 - import_playbook: harden.yml
 - import_playbook: docker.yml
 - import_playbook: tailscale.yml
