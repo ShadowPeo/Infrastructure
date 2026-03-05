@@ -37,6 +37,11 @@
         line: 'LIBSEAT_BACKEND=seatd'
         state: present
 
+    - name: Gather host groups
+      ansible.builtin.getent:
+        database: group
+      register: host_groups
+
     - name: Add managed users to seat group
       ansible.builtin.user:
         name: "{{ item.username }}"
@@ -45,6 +50,7 @@
       loop: "{{ managed_users | rejectattr('state', 'equalto', 'absent') | list }}"
       loop_control:
         label: "{{ item.username }}"
+      when: "'seat' in host_groups.ansible_facts.getent_group"
 
 - name: Configure Chromium on display hosts
   hosts: display_hosts
