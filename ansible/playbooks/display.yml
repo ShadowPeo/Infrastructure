@@ -1,40 +1,34 @@
 ---
-# Configure display/kiosk hosts.
+# Configure display/kiosk hosts and Raspberry Pi seat management.
 #
-# seatd seat management tasks are Raspberry Pi only - other display host types
-# use logind natively and do not need seatd. Apply to other platforms only if
-# a similar issue arises.
+# Play 1 targets all Raspberry Pi hosts: devsec PAM hardening breaks logind
+# VT session activation, preventing Wayland compositors from calling
+# TakeControl(). seatd provides a simpler seat management path unaffected
+# by this. Applies to all Pis, not just display hosts, as any Pi running
+# a Wayland compositor would hit the same issue.
 #
-# Chromium keyring fix applies to all display hosts that have Chromium installed.
-# Suppresses the 'Default Keyring' password prompt on autologin kiosk sessions
-# by switching Chromium to its own local credential store instead of gnome-keyring.
+# Play 2 targets display_hosts: suppresses the gnome-keyring 'Default Keyring'
+# password prompt in Chromium on autologin kiosk sessions.
 #
 # Usage:
 #   ansible-playbook playbooks/display.yml -i <inventory>
 #   ansible-playbook playbooks/display.yml -i <inventory> --limit DISP-ITOFF
 
-- name: Configure display/kiosk hosts
-  hosts: display_hosts
+- name: Configure seatd on Raspberry Pi hosts
+  hosts: raspberry_pi
   become: true
 
   tasks:
-    # --- seatd seat management (Raspberry Pi display hosts only) ---
-    # devsec PAM hardening breaks logind VT session activation, preventing
-    # Wayland compositors from calling TakeControl(). seatd provides a simpler
-    # seat management path that is unaffected by logind session/VT issues.
-
     - name: Install seatd
       ansible.builtin.apt:
         name: seatd
         state: present
-      when: "'raspberry_pi' in group_names"
 
     - name: Enable and start seatd service
       ansible.builtin.systemd:
         name: seatd
         enabled: true
         state: started
-      when: "'raspberry_pi' in group_names"
 
     - name: Set LIBSEAT_BACKEND=seatd in system environment
       ansible.builtin.lineinfile:
@@ -42,7 +36,6 @@
         regexp: '^LIBSEAT_BACKEND='
         line: 'LIBSEAT_BACKEND=seatd'
         state: present
-      when: "'raspberry_pi' in group_names"
 
     - name: Add managed users to seat group
       ansible.builtin.user:
@@ -52,13 +45,16 @@
       loop: "{{ managed_users | rejectattr('state', 'equalto', 'absent') | list }}"
       loop_control:
         label: "{{ item.username }}"
-      when: "'raspberry_pi' in group_names"
 
-    # --- Chromium keyring fix (all display hosts with Chromium installed) ---
-    # On autologin kiosk sessions gnome-keyring is not unlocked by PAM (no
-    # password auth), causing Chromium to prompt for the 'Default Keyring'
-    # password whenever it needs saved credentials. Switching to the basic
-    # password store removes the gnome-keyring dependency entirely.
+- name: Configure Chromium on display hosts
+  hosts: display_hosts
+  become: true
+
+  tasks:
+    # Suppress gnome-keyring 'Default Keyring' prompt on autologin kiosk sessions.
+    # PAM does not unlock the keyring without password auth, causing Chromium to
+    # prompt on every start. Switching to the basic password store removes the
+    # gnome-keyring dependency entirely.
 
     - name: Check if Chromium config directory exists
       ansible.builtin.stat:
