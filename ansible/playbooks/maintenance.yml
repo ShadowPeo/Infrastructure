@@ -9,7 +9,7 @@
 #   ansible-playbook playbooks/maintenance.yml -i <inventory> --check
 
 - name: Maintain Ubuntu/Debian hosts
-  hosts: ubuntu:docker_hosts:raspberry_pi
+  hosts: ubuntu:debian:docker_hosts:raspberry_pi
   become: true
 
   tasks:

@@ -12,4 +12,5 @@
 - import_playbook: docker.yml
 - import_playbook: tailscale.yml
 - import_playbook: cockpit.yml
+- import_playbook: display.yml
 - import_playbook: reboot.yml

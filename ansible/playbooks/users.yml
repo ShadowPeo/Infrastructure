@@ -86,6 +86,17 @@
       loop_control:
         label: "{{ item.username }}"
 
+    - name: Ensure home directory ownership is correct
+      ansible.builtin.file:
+        path: "/home/{{ item.username }}"
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        state: directory
+      when: item.state | default('present') == 'present'
+      loop: "{{ managed_users | rejectattr('state', 'equalto', 'absent') | list }}"
+      loop_control:
+        label: "{{ item.username }}"
+
     - name: Add users to optional groups (if group exists on this host)
       ansible.builtin.user:
         name: "{{ item.0.username }}"
