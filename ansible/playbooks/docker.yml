@@ -25,6 +25,19 @@
         mode: '0755'
         recurse: true
 
+    - name: Create standard Docker networks
+      community.docker.docker_network:
+        name: "{{ item.name }}"
+        driver: bridge
+        ipam_config:
+          - subnet: "{{ item.subnet }}"
+            iprange: "{{ item.iprange }}"
+            gateway: "{{ item.gateway }}"
+        state: present
+      loop: "{{ docker_networks }}"
+      loop_control:
+        label: "{{ item.name }}"
+
     - name: Reboot to apply Docker configuration
       ansible.builtin.reboot:
         reboot_timeout: 300
