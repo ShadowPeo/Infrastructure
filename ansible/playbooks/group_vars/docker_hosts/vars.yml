@@ -8,13 +8,14 @@ sysctl_overwrite:
 # UFW drops forwarded packets by default which breaks Docker networking.
 ufw_default_forward_policy: ACCEPT
 
-# Reduce default Docker subnet allocation from /16 to /24.
-# Base range (172.20.0.0/14) is intentionally separate from the named network
-# space (172.31.x.x) to prevent auto-allocation clashing with static subnets.
+# Reduce default Docker subnet allocation from /16 to /28.
+# Base 172.31.0.0/22 covers 172.31.0-3.x (1024 addresses), carved into
+# 64 x /28 networks (14 usable container IPs each) for auto-created networks.
+# Named networks use explicit subnets in 172.31.241.x/254.x — no overlap.
 docker_daemon_options:
   default-address-pools:
-    - base: "172.20.0.0/14"
-      size: 24
+    - base: "172.31.0.0/22"
+      size: 28
 
 # Standard networks created on every Docker host.
 # Apps attach to these by name rather than creating ad-hoc networks per stack.
