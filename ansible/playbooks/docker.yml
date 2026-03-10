@@ -16,14 +16,19 @@
     - role: geerlingguy.docker
 
   post_tasks:
-    - name: Ensure /docker directory exists with correct ownership
+    - name: Check if /docker directory exists
+      ansible.builtin.stat:
+        path: /docker
+      register: docker_dir
+
+    - name: Create /docker directory with correct ownership
       ansible.builtin.file:
         path: /docker
         state: directory
         owner: ansible
         group: docker
-        mode: '0755'
-        recurse: true
+        mode: '0775'
+      when: not docker_dir.stat.exists
 
     - name: Create standard Docker networks
       community.docker.docker_network:
