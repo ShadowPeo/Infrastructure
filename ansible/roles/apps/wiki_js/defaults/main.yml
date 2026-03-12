@@ -1,0 +1,6 @@
+---
+# Default values for wiki_js
+# Override in group_vars or host_vars
+
+wiki_js_image_version: latest
+wiki_js_data_dir: "{{ docker_root }}/wiki_js"

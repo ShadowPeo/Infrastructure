@@ -1,0 +1,6 @@
+---
+- name: restart wiki_js
+  community.docker.docker_compose_v2:
+    project_src: "{{ wiki_js_data_dir }}"
+    state: present
+    recreate: always

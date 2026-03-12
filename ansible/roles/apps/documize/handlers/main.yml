@@ -1,0 +1,6 @@
+---
+- name: restart documize
+  community.docker.docker_compose_v2:
+    project_src: "{{ documize_data_dir }}"
+    state: present
+    recreate: always

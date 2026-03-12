@@ -1,0 +1,6 @@
+---
+# Default values for uptime_kuma
+# Override in group_vars or host_vars
+
+uptime_kuma_image_version: latest
+uptime_kuma_data_dir: "{{ docker_root }}/uptime_kuma"
