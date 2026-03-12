@@ -1,0 +1,22 @@
+---
+- name: Create paperless directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ paperless_data_dir }}"
+
+- name: Deploy paperless compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ paperless_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart paperless
+
+- name: Start paperless stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ paperless_data_dir }}"
+    state: present

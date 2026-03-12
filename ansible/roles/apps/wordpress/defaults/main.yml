@@ -1,0 +1,6 @@
+---
+# Default values for wordpress
+# Override in group_vars or host_vars
+
+wordpress_image_version: latest
+wordpress_data_dir: "{{ docker_root }}/wordpress"

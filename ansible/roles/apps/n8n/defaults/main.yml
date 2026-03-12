@@ -1,0 +1,6 @@
+---
+# Default values for n8n
+# Override in group_vars or host_vars
+
+n8n_image_version: latest
+n8n_data_dir: "{{ docker_root }}/n8n"

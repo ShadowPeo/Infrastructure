@@ -1,0 +1,6 @@
+---
+- name: restart archivebox
+  community.docker.docker_compose_v2:
+    project_src: "{{ archivebox_data_dir }}"
+    state: present
+    recreate: always

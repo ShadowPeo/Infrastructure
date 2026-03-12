@@ -1,0 +1,6 @@
+---
+# Default values for archivebox
+# Override in group_vars or host_vars
+
+archivebox_image_version: latest
+archivebox_data_dir: "{{ docker_root }}/archivebox"

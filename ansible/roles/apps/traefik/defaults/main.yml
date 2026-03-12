@@ -1,0 +1,6 @@
+---
+# Default values for traefik
+# Override in group_vars or host_vars
+
+traefik_image_version: latest
+traefik_data_dir: "{{ docker_root }}/traefik"

@@ -1,0 +1,6 @@
+---
+# Default values for freshrss
+# Override in group_vars or host_vars
+
+freshrss_image_version: latest
+freshrss_data_dir: "{{ docker_root }}/freshrss"

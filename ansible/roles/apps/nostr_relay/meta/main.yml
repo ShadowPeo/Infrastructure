@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  role_name: nostr_relay
+  description: Deploy nostr_relay Docker stack
+  min_ansible_version: "2.14"
+dependencies:
+  - role: common

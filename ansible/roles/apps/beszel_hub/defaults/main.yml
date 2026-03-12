@@ -1,0 +1,6 @@
+---
+# Default values for beszel_hub
+# Override in group_vars or host_vars
+
+beszel_hub_image_version: latest
+beszel_hub_data_dir: "{{ docker_root }}/beszel_hub"

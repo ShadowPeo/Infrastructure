@@ -1,0 +1,22 @@
+---
+- name: Create n8n directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ n8n_data_dir }}"
+
+- name: Deploy n8n compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ n8n_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart n8n
+
+- name: Start n8n stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ n8n_data_dir }}"
+    state: present

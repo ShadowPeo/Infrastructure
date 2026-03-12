@@ -1,0 +1,6 @@
+---
+# Default values for karakeep
+# Override in group_vars or host_vars
+
+karakeep_image_version: latest
+karakeep_data_dir: "{{ docker_root }}/karakeep"

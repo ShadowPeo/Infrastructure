@@ -1,0 +1,6 @@
+---
+# Default values for receipt_wrangler
+# Override in group_vars or host_vars
+
+receipt_wrangler_image_version: latest
+receipt_wrangler_data_dir: "{{ docker_root }}/receipt_wrangler"

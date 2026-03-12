@@ -1,0 +1,6 @@
+---
+# Default values for nostr_relay
+# Override in group_vars or host_vars
+
+nostr_relay_image_version: latest
+nostr_relay_data_dir: "{{ docker_root }}/nostr_relay"

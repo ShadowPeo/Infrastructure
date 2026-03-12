@@ -1,0 +1,22 @@
+---
+- name: Create ittools directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ ittools_data_dir }}"
+
+- name: Deploy ittools compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ ittools_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart ittools
+
+- name: Start ittools stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ ittools_data_dir }}"
+    state: present

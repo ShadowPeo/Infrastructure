@@ -1,0 +1,6 @@
+---
+# Default values for pinepods
+# Override in group_vars or host_vars
+
+pinepods_image_version: latest
+pinepods_data_dir: "{{ docker_root }}/pinepods"

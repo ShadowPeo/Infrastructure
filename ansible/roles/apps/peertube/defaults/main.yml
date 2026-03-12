@@ -1,0 +1,6 @@
+---
+# Default values for peertube
+# Override in group_vars or host_vars
+
+peertube_image_version: latest
+peertube_data_dir: "{{ docker_root }}/peertube"

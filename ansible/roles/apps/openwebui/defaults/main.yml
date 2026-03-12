@@ -1,0 +1,6 @@
+---
+# Default values for openwebui
+# Override in group_vars or host_vars
+
+openwebui_image_version: latest
+openwebui_data_dir: "{{ docker_root }}/openwebui"

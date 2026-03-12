@@ -1,0 +1,6 @@
+---
+# Default values for changedetection
+# Override in group_vars or host_vars
+
+changedetection_image_version: latest
+changedetection_data_dir: "{{ docker_root }}/changedetection"

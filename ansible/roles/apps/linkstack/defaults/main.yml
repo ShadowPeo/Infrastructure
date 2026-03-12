@@ -1,0 +1,6 @@
+---
+# Default values for linkstack
+# Override in group_vars or host_vars
+
+linkstack_image_version: latest
+linkstack_data_dir: "{{ docker_root }}/linkstack"

@@ -1,0 +1,6 @@
+---
+# Default values for snippet_box
+# Override in group_vars or host_vars
+
+snippet_box_image_version: latest
+snippet_box_data_dir: "{{ docker_root }}/snippet_box"

@@ -1,0 +1,6 @@
+---
+# Default values for spoolman
+# Override in group_vars or host_vars
+
+spoolman_image_version: latest
+spoolman_data_dir: "{{ docker_root }}/spoolman"

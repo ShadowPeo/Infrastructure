@@ -1,5 +1,5 @@
 # Ignore Galaxy-installed roles — they follow namespace.rolename convention (dot in name).
 # Custom roles have no dot and are tracked normally.
 # Install Galaxy roles with: ansible-galaxy role install -r requirements.yml -p roles/
-*.*
+/*.*
 !.gitignore

@@ -1,0 +1,6 @@
+---
+# Default values for linkding
+# Override in group_vars or host_vars
+
+linkding_image_version: latest
+linkding_data_dir: "{{ docker_root }}/linkding"

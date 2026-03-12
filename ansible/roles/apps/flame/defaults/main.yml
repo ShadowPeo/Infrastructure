@@ -1,0 +1,6 @@
+---
+# Default values for flame
+# Override in group_vars or host_vars
+
+flame_image_version: latest
+flame_data_dir: "{{ docker_root }}/flame"

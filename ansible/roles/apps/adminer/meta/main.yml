@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  role_name: adminer
+  description: Deploy adminer Docker stack
+  min_ansible_version: "2.14"
+dependencies:
+  - role: common

@@ -1,0 +1,6 @@
+---
+# Default values for ntfy
+# Override in group_vars or host_vars
+
+ntfy_image_version: latest
+ntfy_data_dir: "{{ docker_root }}/ntfy"

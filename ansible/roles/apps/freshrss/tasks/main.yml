@@ -1,0 +1,22 @@
+---
+- name: Create freshrss directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ freshrss_data_dir }}"
+
+- name: Deploy freshrss compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ freshrss_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart freshrss
+
+- name: Start freshrss stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ freshrss_data_dir }}"
+    state: present

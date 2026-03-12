@@ -1,0 +1,88 @@
+{% from 'macros/postgres.j2' import postgres %}
+{% from 'macros/redis.j2'    import redis    %}
+{% from 'macros/traefik.j2'  import labels   %}
+---
+networks:
+  Public:
+    external: true
+  paperless_internal:
+    name: Paperless_Internal
+    driver: bridge
+
+volumes:
+  paperless_pgdata:
+    name: Paperless-DB_PGData
+
+services:
+
+{{ postgres(
+    'Paperless-Database_PG' + paperless_postgres_version,
+    'paperless',
+    paperless_db_user,
+    paperless_db_password,
+    data_subpath='data/db',
+    network='paperless_internal',
+    version=paperless_postgres_version,
+    variant=paperless_postgres_variant
+  ) }}
+
+{{ redis(
+    'Paperless-Redis',
+    network='paperless_internal',
+    version=paperless_redis_version
+  ) }}
+
+  Paperless-App:
+    image: ghcr.io/paperless-ngx/paperless-ngx:{{ paperless_image_version }}
+    container_name: Paperless-App
+    depends_on:
+      Paperless-Database_PG{{ paperless_postgres_version }}:
+        condition: service_healthy
+      Paperless-Redis:
+        condition: service_healthy
+    volumes:
+      - ./data/media:/usr/src/paperless/media
+      - ./data/export:/usr/src/paperless/export
+      - ./data/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://Paperless-Redis:6379
+      PAPERLESS_DBHOST: Paperless-Database_PG{{ paperless_postgres_version }}
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: {{ paperless_db_user }}
+      PAPERLESS_DBPASS: {{ paperless_db_password }}
+      PAPERLESS_URL: https://{{ paperless_domain }}
+      PAPERLESS_OCR_LANGUAGE: {{ paperless_ocr_language }}
+      PAPERLESS_TIME_ZONE: {{ paperless_time_zone }}
+    networks:
+      - paperless_internal
+      - Public
+    restart: unless-stopped
+{{ labels('paperless', paperless_domain, paperless_port, middlewares=paperless_traefik_middlewares) }}
+
+{% if paperless_enable_gpt %}
+  Paperless-GPT:
+    image: icereed/paperless-gpt:{{ paperless_gpt_image_version }}
+    container_name: Paperless-GPT
+    environment:
+      PAPERLESS_BASE_URL: http://Paperless-App:{{ paperless_port }}
+      PAPERLESS_API_TOKEN: {{ paperless_api_token }}
+    networks:
+      - paperless_internal
+      - Public
+    restart: unless-stopped
+{{ labels('paperless-gpt', 'gpt.' + paperless_domain, 8080, middlewares=paperless_traefik_middlewares) }}
+{% endif %}
+
+{% if paperless_enable_ai %}
+  Paperless-AI:
+    image: clusterzx/paperless-ai:{{ paperless_ai_image_version }}
+    container_name: Paperless-AI
+    environment:
+      PAPERLESS_API_URL: http://Paperless-App:{{ paperless_port }}/api
+      PAPERLESS_API_TOKEN: {{ paperless_api_token }}
+    networks:
+      - paperless_internal
+      - Public
+    restart: unless-stopped
+{{ labels('paperless-ai', 'ai.' + paperless_domain, 8000, middlewares=paperless_traefik_middlewares) }}
+{% endif %}

@@ -1,0 +1,22 @@
+---
+- name: Create nostr_relay directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ nostr_relay_data_dir }}"
+
+- name: Deploy nostr_relay compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ nostr_relay_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart nostr_relay
+
+- name: Start nostr_relay stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ nostr_relay_data_dir }}"
+    state: present

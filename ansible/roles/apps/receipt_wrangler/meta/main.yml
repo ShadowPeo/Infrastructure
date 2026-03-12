@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  role_name: receipt_wrangler
+  description: Deploy receipt_wrangler Docker stack
+  min_ansible_version: "2.14"
+dependencies:
+  - role: common

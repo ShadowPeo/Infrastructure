@@ -1,0 +1,6 @@
+---
+# Default values for lubelogger
+# Override in group_vars or host_vars
+
+lubelogger_image_version: latest
+lubelogger_data_dir: "{{ docker_root }}/lubelogger"

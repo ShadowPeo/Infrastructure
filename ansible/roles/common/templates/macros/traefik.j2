@@ -1,0 +1,40 @@
+{#
+  traefik.j2 — reusable Traefik label blocks
+
+  Usage — standard public route:
+    {% from 'macros/traefik.j2' import labels %}
+    {{ labels('myapp', 'myapp.jps.sh', 8080) }}
+
+  Usage — with middlewares (e.g. Tailscale-only):
+    {{ labels('myapp', 'myapp.int.jps.sh', 8080, middlewares=['tailscale-only@file']) }}
+
+  Usage — multiple domains (e.g. canonical + alias domains):
+    {{ labels('myapp', 'myapp.growitmakeit.com.au', 8080, extra_domains=['myapp.growitmakeit.com']) }}
+
+  Parameters:
+    router_name   : Traefik router name (lowercase, no spaces)
+    domain        : primary domain (e.g. myapp.growitmakeit.com.au)
+    port          : backend container port
+    middlewares   : list of middleware names (default: empty)
+    extra_domains : additional domains to add to Host() rule (default: empty)
+    entrypoints   : entrypoints to use (default: websecure)
+    tls           : enable TLS (default: true)
+#}
+{% macro labels(router_name, domain, port, middlewares=[], extra_domains=[], entrypoints='websecure', tls=true) %}
+    labels:
+      - "traefik.enable=true"
+{% if extra_domains %}
+      - "traefik.http.routers.{{ router_name }}.rule=Host(`{{ domain }}`){% for d in extra_domains %} || Host(`{{ d }}`){% endfor %}"
+{% else %}
+      - "traefik.http.routers.{{ router_name }}.rule=Host(`{{ domain }}`)"
+{% endif %}
+      - "traefik.http.routers.{{ router_name }}.entrypoints={{ entrypoints }}"
+      - "traefik.http.services.{{ router_name }}.loadbalancer.server.port={{ port }}"
+{% if tls %}
+      - "traefik.http.routers.{{ router_name }}.tls=true"
+      - "traefik.http.routers.{{ router_name }}.tls.certresolver=letsencrypt"
+{% endif %}
+{% if middlewares %}
+      - "traefik.http.routers.{{ router_name }}.middlewares={{ middlewares | join(',') }}"
+{% endif %}
+{% endmacro %}

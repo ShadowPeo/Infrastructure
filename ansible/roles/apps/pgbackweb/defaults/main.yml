@@ -1,0 +1,6 @@
+---
+# Default values for pgbackweb
+# Override in group_vars or host_vars
+
+pgbackweb_image_version: latest
+pgbackweb_data_dir: "{{ docker_root }}/pgbackweb"

@@ -1,0 +1,29 @@
+{#
+  redis.j2 — reusable Redis service block
+
+  Usage:
+    {% from 'macros/redis.j2' import redis %}
+    {{ redis('MyApp-REDIS') }}
+
+  Parameters:
+    container_name  : Docker container name
+    network         : network name (default: internal)
+    version         : image tag (default: alpine)
+    command         : optional redis command args (e.g. '--save 60 1')
+#}
+{% macro redis(container_name, network='internal', version='alpine', command='') %}
+  {{ container_name }}:
+    image: docker.io/library/redis:{{ version }}
+    container_name: {{ container_name }}
+{% if command %}
+    command: {{ command }}
+{% endif %}
+    networks:
+      - {{ network }}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{% endmacro %}

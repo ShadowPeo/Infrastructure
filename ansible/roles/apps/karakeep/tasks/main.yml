@@ -1,0 +1,22 @@
+---
+- name: Create karakeep directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ karakeep_data_dir }}"
+
+- name: Deploy karakeep compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ karakeep_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart karakeep
+
+- name: Start karakeep stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ karakeep_data_dir }}"
+    state: present

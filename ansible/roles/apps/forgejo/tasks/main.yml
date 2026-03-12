@@ -1,0 +1,22 @@
+---
+- name: Create forgejo directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ forgejo_data_dir }}"
+
+- name: Deploy forgejo compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ forgejo_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart forgejo
+
+- name: Start forgejo stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ forgejo_data_dir }}"
+    state: present

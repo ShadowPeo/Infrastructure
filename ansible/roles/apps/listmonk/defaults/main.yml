@@ -1,0 +1,6 @@
+---
+# Default values for listmonk
+# Override in group_vars or host_vars
+
+listmonk_image_version: latest
+listmonk_data_dir: "{{ docker_root }}/listmonk"

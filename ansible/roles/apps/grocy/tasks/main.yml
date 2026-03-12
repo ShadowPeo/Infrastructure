@@ -1,0 +1,22 @@
+---
+- name: Create grocy directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ grocy_data_dir }}"
+
+- name: Deploy grocy compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ grocy_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart grocy
+
+- name: Start grocy stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ grocy_data_dir }}"
+    state: present

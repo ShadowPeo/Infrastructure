@@ -1,0 +1,6 @@
+---
+# Default values for searxng
+# Override in group_vars or host_vars
+
+searxng_image_version: latest
+searxng_data_dir: "{{ docker_root }}/searxng"

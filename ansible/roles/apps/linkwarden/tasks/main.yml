@@ -1,0 +1,22 @@
+---
+- name: Create linkwarden directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ linkwarden_data_dir }}"
+
+- name: Deploy linkwarden compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ linkwarden_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart linkwarden
+
+- name: Start linkwarden stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ linkwarden_data_dir }}"
+    state: present

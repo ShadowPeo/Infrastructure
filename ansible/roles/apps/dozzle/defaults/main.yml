@@ -1,0 +1,6 @@
+---
+# Default values for dozzle
+# Override in group_vars or host_vars
+
+dozzle_image_version: latest
+dozzle_data_dir: "{{ docker_root }}/dozzle"

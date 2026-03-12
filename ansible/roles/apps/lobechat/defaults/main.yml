@@ -1,0 +1,6 @@
+---
+# Default values for lobechat
+# Override in group_vars or host_vars
+
+lobechat_image_version: latest
+lobechat_data_dir: "{{ docker_root }}/lobechat"

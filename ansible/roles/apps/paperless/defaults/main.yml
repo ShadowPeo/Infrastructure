@@ -1,0 +1,27 @@
+---
+paperless_image_version: latest
+paperless_data_dir: "{{ docker_root }}/paperless"
+paperless_port: 8000
+
+# Database
+paperless_postgres_version: "17"
+paperless_postgres_variant: alpine
+# paperless_db_user and paperless_db_password must be set in secrets
+
+# Redis
+paperless_redis_version: "8-alpine"
+
+# Domains — override per host/group
+paperless_domain: "dms.int.jps.sh"
+paperless_traefik_middlewares:
+  - "tailscale-only@file"
+
+# Optional AI addons — set to true to enable
+paperless_enable_gpt: false
+paperless_enable_ai: false
+paperless_gpt_image_version: latest
+paperless_ai_image_version: latest
+
+# OCR
+paperless_ocr_language: eng
+paperless_time_zone: "Australia/Melbourne"

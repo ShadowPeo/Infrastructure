@@ -1,0 +1,32 @@
+{#
+  meilisearch.j2 — reusable Meilisearch service block
+
+  Usage:
+    {% from 'macros/meilisearch.j2' import meilisearch %}
+    {{ meilisearch('MyApp-Meilisearch', meilisearch_master_key) }}
+
+  Parameters:
+    container_name  : Docker container name
+    master_key      : MEILI_MASTER_KEY value
+    network         : network name (default: internal)
+    version         : image tag (default: latest)
+    data_subpath    : relative path for data volume (default: data/meilisearch)
+#}
+{% macro meilisearch(container_name, master_key, network='internal', version='latest', data_subpath='data/meilisearch') %}
+  {{ container_name }}:
+    image: getmeili/meilisearch:{{ version }}
+    container_name: {{ container_name }}
+    environment:
+      MEILI_MASTER_KEY: {{ master_key }}
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - ./{{ data_subpath }}:/meili_data
+    networks:
+      - {{ network }}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{% endmacro %}

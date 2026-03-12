@@ -1,0 +1,22 @@
+---
+- name: Create watchtower directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ watchtower_data_dir }}"
+
+- name: Deploy watchtower compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ watchtower_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart watchtower
+
+- name: Start watchtower stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ watchtower_data_dir }}"
+    state: present

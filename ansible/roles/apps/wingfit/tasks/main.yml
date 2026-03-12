@@ -1,0 +1,22 @@
+---
+- name: Create wingfit directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ wingfit_data_dir }}"
+
+- name: Deploy wingfit compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ wingfit_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart wingfit
+
+- name: Start wingfit stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ wingfit_data_dir }}"
+    state: present

@@ -1,0 +1,22 @@
+---
+- name: Create plausible directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ plausible_data_dir }}"
+
+- name: Deploy plausible compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ plausible_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart plausible
+
+- name: Start plausible stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ plausible_data_dir }}"
+    state: present

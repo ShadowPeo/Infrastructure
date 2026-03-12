@@ -1,0 +1,6 @@
+---
+# Default values for technitium
+# Override in group_vars or host_vars
+
+technitium_image_version: latest
+technitium_data_dir: "{{ docker_root }}/technitium"

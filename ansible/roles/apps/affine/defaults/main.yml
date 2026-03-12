@@ -1,0 +1,6 @@
+---
+# Default values for affine
+# Override in group_vars or host_vars
+
+affine_image_version: latest
+affine_data_dir: "{{ docker_root }}/affine"

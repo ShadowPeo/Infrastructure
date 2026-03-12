@@ -1,0 +1,6 @@
+---
+# Default values for cardholder
+# Override in group_vars or host_vars
+
+cardholder_image_version: latest
+cardholder_data_dir: "{{ docker_root }}/cardholder"

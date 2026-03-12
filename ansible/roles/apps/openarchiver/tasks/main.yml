@@ -1,0 +1,22 @@
+---
+- name: Create openarchiver directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0750"
+  loop:
+    - "{{ openarchiver_data_dir }}"
+
+- name: Deploy openarchiver compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ openarchiver_data_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0640"
+  notify: restart openarchiver
+
+- name: Start openarchiver stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ openarchiver_data_dir }}"
+    state: present

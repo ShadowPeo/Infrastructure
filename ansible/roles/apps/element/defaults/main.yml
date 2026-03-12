@@ -1,0 +1,6 @@
+---
+# Default values for element
+# Override in group_vars or host_vars
+
+element_image_version: latest
+element_data_dir: "{{ docker_root }}/element"

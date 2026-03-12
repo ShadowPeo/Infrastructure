@@ -1,0 +1,6 @@
+---
+- name: restart n8n
+  community.docker.docker_compose_v2:
+    project_src: "{{ n8n_data_dir }}"
+    state: present
+    recreate: always

@@ -1,0 +1,6 @@
+---
+- name: restart stalwart
+  community.docker.docker_compose_v2:
+    project_src: "{{ stalwart_data_dir }}"
+    state: present
+    recreate: always
