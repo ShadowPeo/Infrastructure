@@ -1,12 +1,21 @@
 ---
-- name: Create paperless directory structure
+- name: Create paperless service user
+  ansible.builtin.import_tasks: roles/common/tasks/create_service_user.yml
+  vars:
+    service_name: paperless
+    service_uid: "{{ paperless_uid }}"
+
+- name: Create paperless bind-mount directories
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    mode: "0750"
+    owner: paperless
+    group: ACL_DOCKER_DATA_ADMIN
+    mode: "2775"  # setgid — new files inherit ACL_DOCKER_DATA_ADMIN group
   loop:
-    - "{{ paperless_data_dir }}"
+    - { path: "{{ paperless_data_dir }}/consume" }
+    - { path: "{{ paperless_data_dir }}/export" }
+    - { path: "{{ paperless_data_dir }}/media" }
 
 - name: Deploy paperless compose file
   ansible.builtin.template:

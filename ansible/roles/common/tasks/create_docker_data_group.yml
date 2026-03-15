@@ -1,0 +1,21 @@
+---
+# Create the ACL_DOCKER_DATA_ADMIN group and add managed admin users to it.
+# This group is granted group-write on docker data directories that admins
+# need direct filesystem access to (e.g. paperless consume/export).
+#
+# Run once per host, typically from the docker.yml playbook.
+
+- name: Create ACL_DOCKER_DATA_ADMIN group
+  ansible.builtin.group:
+    name: ACL_DOCKER_DATA_ADMIN
+    gid: "{{ acl_docker_data_admin_gid }}"
+    system: false
+    state: present
+
+- name: Add admin users to ACL_DOCKER_DATA_ADMIN
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    groups: ACL_DOCKER_DATA_ADMIN
+    append: true
+  loop: "{{ managed_users | selectattr('state', 'equalto', 'present') | list }}"
+  when: item.username is defined

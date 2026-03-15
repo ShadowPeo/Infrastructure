@@ -1,27 +1,40 @@
 ---
-paperless_image_version: latest
-paperless_data_dir: "{{ docker_root }}/paperless"
-paperless_port: 8000
+# Paperless-ngx — document management system
+# UIDs from docker_service_users_productivity (platform group_vars/docker_hosts)
+paperless_uid: "{{ docker_service_users_productivity.paperless.uid }}"
+paperless_gpt_uid: "{{ docker_service_users_productivity.paperless_gpt.uid }}"
+paperless_ai_uid: "{{ docker_service_users_productivity.paperless_ai.uid }}"
+paperless_umask: "002"  # group-writable — ACL_DOCKER_DATA_ADMIN can write to consume/export
 
-# Database
+# Image versions
+paperless_image_version: latest
 paperless_postgres_version: "17"
 paperless_postgres_variant: alpine
-# paperless_db_user and paperless_db_password must be set in secrets
+paperless_redis_version: "8"
 
-# Redis
-paperless_redis_version: "8-alpine"
-
-# Domains — override per host/group
-paperless_domain: "dms.int.jps.sh"
-paperless_traefik_middlewares:
-  - "tailscale-only@file"
-
-# Optional AI addons — set to true to enable
+# Optional AI addons — disabled by default
 paperless_enable_gpt: false
-paperless_enable_ai: false
 paperless_gpt_image_version: latest
+paperless_enable_ai: false
 paperless_ai_image_version: latest
 
-# OCR
+# Database credentials — set in SOPS-encrypted secrets.yml
+paperless_db_user: paperless
+paperless_db_password: "changeme"
+
+# Paperless API token — required when GPT or AI addon is enabled
+paperless_api_token: ""
+
+# App settings
+paperless_domain: "dms.int.jps.sh"
+paperless_port: 8000
 paperless_ocr_language: eng
 paperless_time_zone: "Australia/Melbourne"
+
+# Bind-mounted paths — only directories needing direct admin/filesystem access
+# DB and Redis data live in named volumes, not here
+paperless_data_dir: "{{ docker_root }}/paperless"
+
+# Traefik
+paperless_traefik_middlewares:
+  - "tailscale-only@file"

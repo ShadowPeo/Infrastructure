@@ -1,0 +1,29 @@
+---
+# Reusable task: create a Docker service user/group with a fixed UID/GID.
+#
+# Call with import_tasks and pass variables:
+#   - import_tasks: roles/common/tasks/create_service_user.yml
+#     vars:
+#       service_name: paperless
+#       service_uid: "{{ docker_service_users_productivity.paperless.uid }}"
+#
+# The UID and GID are always identical — simplifies ownership reasoning.
+# If the user/group already exists with the correct UID/GID the task is a no-op.
+
+- name: "Create service group: {{ service_name }}"
+  ansible.builtin.group:
+    name: "{{ service_name }}"
+    gid: "{{ service_uid }}"
+    system: false
+    state: present
+
+- name: "Create service user: {{ service_name }}"
+  ansible.builtin.user:
+    name: "{{ service_name }}"
+    uid: "{{ service_uid }}"
+    group: "{{ service_name }}"
+    system: false
+    shell: /usr/sbin/nologin
+    home: /nonexistent
+    create_home: false
+    state: present

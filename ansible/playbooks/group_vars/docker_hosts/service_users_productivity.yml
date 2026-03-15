@@ -1,0 +1,47 @@
+---
+# Docker service user registry — Productivity & docs (Group 5)
+# Used by homelab and WPSC. Not needed on project VPS hosts.
+# Range: 6500–6599
+
+docker_service_users_productivity:
+
+  # 6500 paperless-ngx (app=6500, gpt=6501, ai=6502)
+  paperless:        { uid: 6500 }
+  paperless_gpt:    { uid: 6501 }
+  paperless_ai:     { uid: 6502 }
+
+  # 6505 wiki.js
+  wiki_js:          { uid: 6505 }
+
+  # 6510 freshrss
+  freshrss:         { uid: 6510 }
+
+  # 6515 karakeep
+  karakeep:         { uid: 6515 }
+
+  # 6520 wallabag
+  wallabag:         { uid: 6520 }
+
+  # 6525 searxng
+  searxng:          { uid: 6525 }
+
+  # 6530 element (matrix client)
+  element:          { uid: 6530 }
+
+  # 6535 ntfy (push notifications)
+  ntfy:             { uid: 6535 }
+
+  # 6540 forgejo (git hosting)
+  forgejo:          { uid: 6540 }
+
+  # 6545 codeserver (VS Code in browser)
+  codeserver:       { uid: 6545 }
+
+  # 6550 affine (docs/whiteboard)
+  affine:           { uid: 6550 }
+
+  # 6555 openarchiver
+  openarchiver:     { uid: 6555 }
+
+  # 6560 pinepods (podcast manager)
+  pinepods:         { uid: 6560 }

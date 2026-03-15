@@ -10,8 +10,10 @@ networks:
     driver: bridge
 
 volumes:
-  paperless_pgdata:
-    name: Paperless-DB_PGData
+  Paperless_PGData_PG{{ paperless_postgres_version }}:
+    name: Paperless_PGData_PG{{ paperless_postgres_version }}
+  Paperless_Redis_R{{ paperless_redis_version }}:
+    name: Paperless_Redis_R{{ paperless_redis_version }}
 
 services:
 
@@ -20,14 +22,15 @@ services:
     'paperless',
     paperless_db_user,
     paperless_db_password,
-    data_subpath='data/db',
+    volume_name='Paperless_PGData_PG' + paperless_postgres_version,
     network='paperless_internal',
     version=paperless_postgres_version,
     variant=paperless_postgres_variant
   ) }}
 
 {{ redis(
-    'Paperless-Redis',
+    'Paperless-Redis_R' + paperless_redis_version,
+    volume_name='Paperless_Redis_R' + paperless_redis_version,
     network='paperless_internal',
     version=paperless_redis_version
   ) }}
@@ -38,14 +41,17 @@ services:
     depends_on:
       Paperless-Database_PG{{ paperless_postgres_version }}:
         condition: service_healthy
-      Paperless-Redis:
+      Paperless-Redis_R{{ paperless_redis_version }}:
         condition: service_healthy
     volumes:
-      - ./data/media:/usr/src/paperless/media
-      - ./data/export:/usr/src/paperless/export
-      - ./data/consume:/usr/src/paperless/consume
+      - {{ paperless_data_dir }}/consume:/usr/src/paperless/consume
+      - {{ paperless_data_dir }}/export:/usr/src/paperless/export
+      - {{ paperless_data_dir }}/media:/usr/src/paperless/media
     environment:
-      PAPERLESS_REDIS: redis://Paperless-Redis:6379
+      PUID: "{{ paperless_uid }}"
+      PGID: "{{ paperless_uid }}"
+      UMASK: "{{ paperless_umask }}"
+      PAPERLESS_REDIS: redis://Paperless-Redis_R{{ paperless_redis_version }}:6379
       PAPERLESS_DBHOST: Paperless-Database_PG{{ paperless_postgres_version }}
       PAPERLESS_DBNAME: paperless
       PAPERLESS_DBUSER: {{ paperless_db_user }}
@@ -64,6 +70,8 @@ services:
     image: icereed/paperless-gpt:{{ paperless_gpt_image_version }}
     container_name: Paperless-GPT
     environment:
+      PUID: "{{ paperless_gpt_uid }}"
+      PGID: "{{ paperless_gpt_uid }}"
       PAPERLESS_BASE_URL: http://Paperless-App:{{ paperless_port }}
       PAPERLESS_API_TOKEN: {{ paperless_api_token }}
     networks:
@@ -78,6 +86,8 @@ services:
     image: clusterzx/paperless-ai:{{ paperless_ai_image_version }}
     container_name: Paperless-AI
     environment:
+      PUID: "{{ paperless_ai_uid }}"
+      PGID: "{{ paperless_ai_uid }}"
       PAPERLESS_API_URL: http://Paperless-App:{{ paperless_port }}/api
       PAPERLESS_API_TOKEN: {{ paperless_api_token }}
     networks:

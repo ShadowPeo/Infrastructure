@@ -1,0 +1,36 @@
+---
+# Docker service user registry — Dev & data tools (Group 7)
+# Broadly applicable. Site-specific tools (e.g. WPSC directus) live in site repos.
+# Range: 6700–6799
+
+docker_service_users_devtools:
+
+  # 6700 n8n (automation/workflows)
+  n8n:              { uid: 6700 }
+
+  # 6705 ittools (CorentinTh's IT Tools — network/encoding utilities)
+  ittools:          { uid: 6705 }
+
+  # 6710 snippet_box
+  snippet_box:      { uid: 6710 }
+
+  # 6715 bytestash (snippet/paste manager)
+  bytestash:        { uid: 6715 }
+
+  # 6720 cardholder (virtual card manager)
+  cardholder:       { uid: 6720 }
+
+  # 6725 openwebui (LLM frontend)
+  openwebui:        { uid: 6725 }
+
+  # 6730 lobechat (LLM frontend)
+  lobechat:         { uid: 6730 }
+
+  # 6735 archivebox (web archiving)
+  archivebox:       { uid: 6735 }
+
+  # 6745 flame (dashboard/startpage)
+  flame:            { uid: 6745 }
+
+  # 6750 changedetection (web change monitoring)
+  changedetection:  { uid: 6750 }

@@ -1,23 +1,38 @@
 {#
   postgres.j2 — reusable PostgreSQL service block
 
-  Usage in a compose template:
+  Uses a named volume for data — never a bind mount. The volume must be declared
+  in the calling template's volumes: section. Include the Postgres version in the
+  volume name so major-version upgrades can run old and new volumes side by side:
+
+    volumes:
+      MyApp_PGData_PG{{ myapp_postgres_version }}:
+        name: MyApp_PGData_PG{{ myapp_postgres_version }}
+
+  Usage:
     {% from 'macros/postgres.j2' import postgres %}
-    {{ postgres('MyApp-DB', 'myapp', myapp_db_user, myapp_db_password) }}
+    {{ postgres(
+        'MyApp-Database_PG' + myapp_postgres_version,
+        'myapp',
+        myapp_db_user,
+        myapp_db_password,
+        volume_name='MyApp_PGData_PG' + myapp_postgres_version,
+        network='myapp_internal'
+      ) }}
 
   Parameters:
-    container_name  : Docker container name
+    container_name  : Docker container name (include version — e.g. MyApp-Database_PG17)
     db_name         : POSTGRES_DB value
-    db_user         : POSTGRES_USER value (pass Ansible variable, resolved at template time)
-    db_password     : POSTGRES_PASSWORD value (pass Ansible variable, resolved at template time)
-    data_subpath    : relative path inside stack dir for data volume (default: data/db)
+    db_user         : POSTGRES_USER
+    db_password     : POSTGRES_PASSWORD
+    volume_name     : Named volume for data — MUST include version (e.g. MyApp_PGData_PG17)
     network         : network name to attach to (default: internal)
-    version         : PostgreSQL major version (default: 17)
+    version         : PostgreSQL major version tag (default: 17)
     variant         : image variant — alpine, bookworm, etc. (default: alpine)
-    extra_image     : override full image (e.g. pgvector/pgvector:pg16 — replaces version+variant)
+    extra_image     : override full image string (e.g. pgvector/pgvector:pg17-alpine)
 #}
 {% macro postgres(container_name, db_name, db_user, db_password,
-                  data_subpath='data/db', network='internal',
+                  volume_name='', network='internal',
                   version='17', variant='alpine', extra_image='') %}
   {{ container_name }}:
     image: {% if extra_image %}{{ extra_image }}{% else %}docker.io/library/postgres:{{ version }}-{{ variant }}{% endif %}
@@ -28,7 +43,7 @@
       POSTGRES_USER: {{ db_user }}
       POSTGRES_PASSWORD: {{ db_password }}
     volumes:
-      - ./{{ data_subpath }}:/var/lib/postgresql/data
+      - {{ volume_name }}:/var/lib/postgresql/data
     networks:
       - {{ network }}
     restart: unless-stopped
