@@ -18,9 +18,9 @@
     middlewares   : list of middleware names (default: empty)
     extra_domains : additional domains to add to Host() rule (default: empty)
     entrypoints   : entrypoints to use (default: websecure)
-    tls           : enable TLS (default: true)
+    tls           : add tls.certresolver=letsencrypt labels (default: false — HTTP→HTTPS is handled at the Traefik entrypoint level)
 #}
-{% macro labels(router_name, domain, port, middlewares=[], extra_domains=[], entrypoints='websecure', tls=true) %}
+{% macro labels(router_name, domain, port, middlewares=[], extra_domains=[], entrypoints='websecure', tls=false) %}
     labels:
       - "traefik.enable=true"
 {% if extra_domains %}

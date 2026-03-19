@@ -1,12 +1,13 @@
 ---
-- name: Create flame directory structure
+- name: Create flame directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: "{{ ansible_user }}"
-    mode: "0750"
+    mode: "0755"
   loop:
     - "{{ flame_data_dir }}"
+    - "{{ flame_data_dir }}/{{ flame_instance if flame_instance else 'data' }}"
 
 - name: Deploy flame compose file
   ansible.builtin.template:
