@@ -1,6 +1,0 @@
----
-# Default values for atlas_cmms
-# Override in group_vars or host_vars
-
-atlas_cmms_image_version: latest
-atlas_cmms_data_dir: "{{ docker_root }}/atlas_cmms"

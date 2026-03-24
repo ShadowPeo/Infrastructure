@@ -1,6 +1,0 @@
----
-- name: restart ittools
-  community.docker.docker_compose_v2:
-    project_src: "{{ ittools_data_dir }}"
-    state: present
-    recreate: always

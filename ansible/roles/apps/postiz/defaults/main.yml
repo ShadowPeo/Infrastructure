@@ -1,6 +1,0 @@
----
-# Default values for postiz
-# Override in group_vars or host_vars
-
-postiz_image_version: latest
-postiz_data_dir: "{{ docker_root }}/postiz"

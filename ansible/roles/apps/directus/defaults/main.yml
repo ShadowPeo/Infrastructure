@@ -1,6 +1,0 @@
----
-# Default values for directus
-# Override in group_vars or host_vars
-
-directus_image_version: latest
-directus_data_dir: "{{ docker_root }}/directus"

@@ -1,3 +1,0 @@
----
-# Common role — no tasks. Provides shared Jinja2 macros via templates/macros/
-# App roles declare this as a dependency in meta/main.yml to gain access to macros.

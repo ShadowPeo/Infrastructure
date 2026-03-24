@@ -1,6 +1,0 @@
----
-# Default values for beszel_agent
-# Override in group_vars or host_vars
-
-beszel_agent_image_version: latest
-beszel_agent_data_dir: "{{ docker_root }}/beszel_agent"

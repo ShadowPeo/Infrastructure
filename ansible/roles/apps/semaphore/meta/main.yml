@@ -1,7 +1,0 @@
----
-galaxy_info:
-  role_name: semaphore
-  description: Deploy semaphore Docker stack
-  min_ansible_version: "2.14"
-dependencies:
-  - role: common

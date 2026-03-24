@@ -1,6 +1,0 @@
----
-# Default values for phpipam
-# Override in group_vars or host_vars
-
-phpipam_image_version: latest
-phpipam_data_dir: "{{ docker_root }}/phpipam"

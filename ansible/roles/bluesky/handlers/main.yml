@@ -1,4 +1,0 @@
-- name: restart bluesky
-  shell:
-    chdir: /docker/bluesky
-    cmd: "{{ docker_update_command }}"

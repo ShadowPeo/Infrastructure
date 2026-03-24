@@ -1,6 +1,0 @@
----
-- name: restart pgbackweb
-  community.docker.docker_compose_v2:
-    project_src: "{{ pgbackweb_data_dir }}"
-    state: present
-    recreate: always

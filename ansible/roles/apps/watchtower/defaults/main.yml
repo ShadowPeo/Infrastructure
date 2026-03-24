@@ -1,6 +1,0 @@
----
-# Default values for watchtower
-# Override in group_vars or host_vars
-
-watchtower_image_version: latest
-watchtower_data_dir: "{{ docker_root }}/watchtower"

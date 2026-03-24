@@ -1,6 +1,0 @@
----
-- name: restart healthchecks
-  community.docker.docker_compose_v2:
-    project_src: "{{ healthchecks_data_dir }}"
-    state: present
-    recreate: always

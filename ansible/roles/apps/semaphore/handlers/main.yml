@@ -1,6 +1,0 @@
----
-- name: restart semaphore
-  community.docker.docker_compose_v2:
-    project_src: "{{ semaphore_data_dir }}"
-    state: present
-    recreate: always

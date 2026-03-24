@@ -1,7 +1,0 @@
----
-galaxy_info:
-  role_name: beszel_agent
-  description: Deploy beszel_agent Docker stack
-  min_ansible_version: "2.14"
-dependencies:
-  - role: common

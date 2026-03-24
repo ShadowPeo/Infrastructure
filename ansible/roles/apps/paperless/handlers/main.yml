@@ -1,6 +1,0 @@
----
-- name: restart paperless
-  community.docker.docker_compose_v2:
-    project_src: "{{ paperless_data_dir }}"
-    state: present
-    recreate: always

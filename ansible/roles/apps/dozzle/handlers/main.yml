@@ -1,6 +1,0 @@
----
-- name: restart dozzle
-  community.docker.docker_compose_v2:
-    project_src: "{{ dozzle_data_dir }}"
-    state: present
-    recreate: always

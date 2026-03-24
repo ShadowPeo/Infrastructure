@@ -1,6 +1,0 @@
----
-- name: restart freshrss
-  community.docker.docker_compose_v2:
-    project_src: "{{ freshrss_data_dir }}"
-    state: present
-    recreate: always

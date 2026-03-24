@@ -1,6 +1,0 @@
----
-# Default values for grocy
-# Override in group_vars or host_vars
-
-grocy_image_version: latest
-grocy_data_dir: "{{ docker_root }}/grocy"

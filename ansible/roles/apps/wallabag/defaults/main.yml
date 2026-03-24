@@ -1,6 +1,0 @@
----
-# Default values for wallabag
-# Override in group_vars or host_vars
-
-wallabag_image_version: latest
-wallabag_data_dir: "{{ docker_root }}/wallabag"

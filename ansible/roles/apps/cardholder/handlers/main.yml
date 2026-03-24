@@ -1,6 +1,0 @@
----
-- name: restart cardholder
-  community.docker.docker_compose_v2:
-    project_src: "{{ cardholder_data_dir }}"
-    state: present
-    recreate: always

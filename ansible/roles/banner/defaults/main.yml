@@ -1,8 +1,0 @@
----
-# Default client name used in the generic banner template.
-# Override in site inventory/group_vars/all/vars.yml with the organisation's name.
-client_name: "the Organisation"
-
-# Override the entire banner text by setting this in site group_vars.
-# If empty, the generic banner.j2 template is rendered using client_name.
-banner_text: ""

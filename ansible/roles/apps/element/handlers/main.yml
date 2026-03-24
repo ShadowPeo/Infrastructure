@@ -1,6 +1,0 @@
----
-- name: restart element
-  community.docker.docker_compose_v2:
-    project_src: "{{ element_data_dir }}"
-    state: present
-    recreate: always

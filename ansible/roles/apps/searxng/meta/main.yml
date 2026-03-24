@@ -1,7 +1,0 @@
----
-galaxy_info:
-  role_name: searxng
-  description: Deploy searxng Docker stack
-  min_ansible_version: "2.14"
-dependencies:
-  - role: common

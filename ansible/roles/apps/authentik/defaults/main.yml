@@ -1,6 +1,0 @@
----
-# Default values for authentik
-# Override in group_vars or host_vars
-
-authentik_image_version: latest
-authentik_data_dir: "{{ docker_root }}/authentik"

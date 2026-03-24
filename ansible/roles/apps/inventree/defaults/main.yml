@@ -1,6 +1,0 @@
----
-# Default values for inventree
-# Override in group_vars or host_vars
-
-inventree_image_version: latest
-inventree_data_dir: "{{ docker_root }}/inventree"

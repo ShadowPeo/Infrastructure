@@ -1,6 +1,0 @@
----
-# Default values for ofelia
-# Override in group_vars or host_vars
-
-ofelia_image_version: latest
-ofelia_data_dir: "{{ docker_root }}/ofelia"

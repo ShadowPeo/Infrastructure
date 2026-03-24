@@ -1,6 +1,0 @@
----
-# Default values for wallos
-# Override in group_vars or host_vars
-
-wallos_image_version: latest
-wallos_data_dir: "{{ docker_root }}/wallos"

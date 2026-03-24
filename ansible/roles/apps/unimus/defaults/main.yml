@@ -1,6 +1,0 @@
----
-# Default values for unimus
-# Override in group_vars or host_vars
-
-unimus_image_version: latest
-unimus_data_dir: "{{ docker_root }}/unimus"

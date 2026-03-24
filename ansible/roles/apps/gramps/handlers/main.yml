@@ -1,6 +1,0 @@
----
-- name: restart gramps
-  community.docker.docker_compose_v2:
-    project_src: "{{ gramps_data_dir }}"
-    state: present
-    recreate: always

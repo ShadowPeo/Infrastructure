@@ -1,6 +1,0 @@
----
-- name: restart beszel_hub
-  community.docker.docker_compose_v2:
-    project_src: "{{ beszel_hub_data_dir }}"
-    state: present
-    recreate: always

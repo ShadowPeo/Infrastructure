@@ -1,6 +1,0 @@
----
-# Default values for manyfold
-# Override in group_vars or host_vars
-
-manyfold_image_version: latest
-manyfold_data_dir: "{{ docker_root }}/manyfold"

@@ -1,7 +1,0 @@
----
-galaxy_info:
-  role_name: actual_budget
-  description: Deploy actual_budget Docker stack
-  min_ansible_version: "2.14"
-dependencies:
-  - role: common

@@ -1,6 +1,0 @@
----
-# Default values for portainer
-# Override in group_vars or host_vars
-
-portainer_image_version: latest
-portainer_data_dir: "{{ docker_root }}/portainer"

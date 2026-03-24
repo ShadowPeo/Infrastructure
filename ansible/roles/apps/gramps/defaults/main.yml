@@ -1,6 +1,0 @@
----
-# Default values for gramps
-# Override in group_vars or host_vars
-
-gramps_image_version: latest
-gramps_data_dir: "{{ docker_root }}/gramps"

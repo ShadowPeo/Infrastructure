@@ -1,6 +1,0 @@
----
-# Default values for wingfit
-# Override in group_vars or host_vars
-
-wingfit_image_version: latest
-wingfit_data_dir: "{{ docker_root }}/wingfit"

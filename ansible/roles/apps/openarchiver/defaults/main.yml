@@ -1,6 +1,0 @@
----
-# Default values for openarchiver
-# Override in group_vars or host_vars
-
-openarchiver_image_version: latest
-openarchiver_data_dir: "{{ docker_root }}/openarchiver"

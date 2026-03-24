@@ -1,6 +1,0 @@
----
-# Default values for semaphore
-# Override in group_vars or host_vars
-
-semaphore_image_version: latest
-semaphore_data_dir: "{{ docker_root }}/semaphore"

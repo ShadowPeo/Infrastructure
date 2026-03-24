@@ -1,6 +1,0 @@
----
-# Default values for netbox
-# Override in group_vars or host_vars
-
-netbox_image_version: latest
-netbox_data_dir: "{{ docker_root }}/netbox"

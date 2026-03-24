@@ -1,6 +1,0 @@
----
-# Default values for tailscale
-# Override in group_vars or host_vars
-
-tailscale_image_version: latest
-tailscale_data_dir: "{{ docker_root }}/tailscale"

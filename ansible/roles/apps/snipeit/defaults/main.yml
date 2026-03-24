@@ -1,6 +1,0 @@
----
-# Default values for snipeit
-# Override in group_vars or host_vars
-
-snipeit_image_version: latest
-snipeit_data_dir: "{{ docker_root }}/snipeit"

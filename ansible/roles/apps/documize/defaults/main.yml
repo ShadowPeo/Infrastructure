@@ -1,6 +1,0 @@
----
-# Default values for documize
-# Override in group_vars or host_vars
-
-documize_image_version: latest
-documize_data_dir: "{{ docker_root }}/documize"

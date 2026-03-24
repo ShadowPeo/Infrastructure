@@ -1,6 +1,0 @@
----
-- name: restart atproto_pds
-  community.docker.docker_compose_v2:
-    project_src: "{{ atproto_pds_data_dir }}"
-    state: present
-    recreate: always

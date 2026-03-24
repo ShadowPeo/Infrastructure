@@ -1,6 +1,0 @@
----
-# Default values for atproto_pds
-# Override in group_vars or host_vars
-
-atproto_pds_image_version: latest
-atproto_pds_data_dir: "{{ docker_root }}/atproto_pds"

@@ -1,6 +1,0 @@
----
-# Default values for ittools
-# Override in group_vars or host_vars
-
-ittools_image_version: latest
-ittools_data_dir: "{{ docker_root }}/ittools"

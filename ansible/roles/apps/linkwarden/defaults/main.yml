@@ -1,6 +1,0 @@
----
-# Default values for linkwarden
-# Override in group_vars or host_vars
-
-linkwarden_image_version: latest
-linkwarden_data_dir: "{{ docker_root }}/linkwarden"

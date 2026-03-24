@@ -1,6 +1,0 @@
----
-# Default values for bytestash
-# Override in group_vars or host_vars
-
-bytestash_image_version: latest
-bytestash_data_dir: "{{ docker_root }}/bytestash"

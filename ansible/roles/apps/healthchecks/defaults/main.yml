@@ -1,6 +1,0 @@
----
-# Default values for healthchecks
-# Override in group_vars or host_vars
-
-healthchecks_image_version: latest
-healthchecks_data_dir: "{{ docker_root }}/healthchecks"

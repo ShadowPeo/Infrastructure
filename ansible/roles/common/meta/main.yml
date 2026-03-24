@@ -1,6 +1,0 @@
----
-galaxy_info:
-  role_name: common
-  description: Shared Jinja2 macros for Docker Compose templates
-  min_ansible_version: "2.14"
-dependencies: []
