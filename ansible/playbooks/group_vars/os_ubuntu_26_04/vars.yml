@@ -1,0 +1,12 @@
+---
+# Ubuntu 26.04 uses systemd socket activation for sshd (same as 24.04).
+# Restarting ssh.service while ssh.socket holds port 22 causes "Address already in use".
+# Setting ssh_manage_service: false tells devsec to write the config but not restart the
+# service. The reboot at the end of bootstrap applies the config cleanly instead.
+ssh_manage_service: false
+
+# Ubuntu 26.04 ships with sudo-rs, which refuses non-interactive password auth entirely
+# (no stdin password via -S without a real TTY). Note: sudo-rs does not support the
+# traditional requiretty sudoers directive — NOPASSWD:ALL alone is sufficient.
+# Bootstrap requires NOPASSWD to be pre-configured on the install user before Ansible
+# can escalate. See bootstrap.yml.

@@ -4,7 +4,15 @@
 # After this completes, switch to key auth and run provision.yml for everything else.
 #
 # Usage:
-#   ansible-playbook playbooks/bootstrap.yml -i <inventory> -u sysadmin -k -K
+#   ansible-playbook playbooks/bootstrap.yml -i <inventory> -u sysadmin -k
+#
+# UBUNTU 26.04+ (sudo-rs): sudo-rs refuses non-interactive password auth entirely — -K
+# will not work. Before running this playbook, SSH in manually and pre-configure the
+# install user with NOPASSWD:
+#   echo '<install_user> ALL=(ALL:ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/<install_user>
+#   sudo chmod 440 /etc/sudoers.d/<install_user>
+# Then run bootstrap with -k only (no -K). The ansible service account created here
+# will have NOPASSWD configured automatically for all subsequent runs.
 #
 # For ongoing user management (key rotation, new users, removals) run users.yml directly
 # or let Semaphore trigger it on commit.

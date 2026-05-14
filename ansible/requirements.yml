@@ -11,6 +11,7 @@ collections:
   - name: ansible.posix
     version: ">=1.5.4"
   - name: devsec.hardening
+    version: ">=10.5.1"
 
 roles:
   - name: geerlingguy.docker

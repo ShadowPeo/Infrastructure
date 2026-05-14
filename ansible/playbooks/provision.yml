@@ -11,6 +11,7 @@
 - import_playbook: maintenance.yml
 - import_playbook: ntp.yml
 - import_playbook: harden.yml
+- import_playbook: users.yml   # Re-run after hardening — os_hardening sets nologin on system UIDs (<1000), which breaks the ansible service account
 - import_playbook: docker.yml
 - import_playbook: tailscale.yml
 - import_playbook: cockpit.yml
