@@ -25,7 +25,7 @@
       ansible.builtin.file:
         path: /docker
         state: directory
-        owner: docker
+        owner: ansible
         group: docker
         mode: '0775'
       when: not docker_dir.stat.exists

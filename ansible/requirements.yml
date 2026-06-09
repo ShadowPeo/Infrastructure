@@ -8,6 +8,7 @@ collections:
   - name: community.general
   - name: community.docker
   - name: community.sops
+  - name: community.proxmox
   - name: ansible.posix
     version: ">=1.5.4"
   - name: devsec.hardening
@@ -17,3 +18,5 @@ roles:
   - name: geerlingguy.docker
   - name: geerlingguy.ntp
   - name: artis3n.tailscale
+  - name: IronicBadger.proxmox_nag_removal
+  - name: simoncaron.pve_acme

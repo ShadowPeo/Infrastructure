@@ -1,0 +1,25 @@
+---
+# Manage Netbird state on all Linux hosts.
+# Hosts in the `netbird` group are installed and connected.
+# Hosts NOT in the group have Netbird removed (package, APT source, GPG keyring,
+# state directory). Move a host between in-group and out-of-group → next run
+# converges it.
+#
+# Hosts also in `managed_device` get the self-hosted control plane URL
+# (netbird_mgmt_url, from SOPS group_vars/managed_device/).
+#
+# Required secret (SOPS-encrypted, in site inventory):
+#   netbird_setup_key — group_vars/netbird/secrets.yml
+# Optional secret (SOPS-encrypted, in site inventory):
+#   netbird_mgmt_url  — group_vars/managed_device/secrets.yml
+
+- name: Manage Netbird state
+  hosts: linux_hosts
+  become: true
+
+  tasks:
+    - name: Apply netbird role with state derived from group membership
+      ansible.builtin.include_role:
+        name: netbird
+      vars:
+        netbird_state: "{{ 'present' if 'netbird' in group_names else 'absent' }}"

@@ -1,13 +1,27 @@
 ---
-# Install and connect Tailscale on hosts in the tailscale group.
-# Uses artis3n.tailscale Galaxy role (Linux only - Windows hosts need separate handling).
+# Manage Tailscale state across Linux hosts.
 #
-# Required secret (define in site inventory/group_vars/all/vault.yml, encrypted):
+# Hosts in the `tailscale` group are installed and connected via the
+# `artis3n.tailscale` Galaxy role.
+#
+# Hosts NOT in the `tailscale` group have Tailscale removed via the local
+# `tailscale` role — but **only** when `tailscale_removal_enabled: true`.
+# Removal is OFF by default during the Netbird migration. Enable with:
+#   ansible-playbook playbooks/tailscale.yml \
+#     -i <inventory> \
+#     --extra-vars tailscale_removal_enabled=true
+#
+# Required secret for install (SOPS-encrypted, in site inventory):
 #   tailscale_authkey: "tskey-auth-..."
 
-- name: Install Tailscale
+- name: Install Tailscale on hosts in the tailscale group
   hosts: tailscale
   become: true
-
   roles:
     - role: artis3n.tailscale
+
+- name: Remove Tailscale from hosts no longer in the tailscale group
+  hosts: linux_hosts:!tailscale
+  become: true
+  roles:
+    - role: tailscale

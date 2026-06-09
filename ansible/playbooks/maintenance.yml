@@ -14,39 +14,38 @@
 
   tasks:
     # --- Zabbix pre-upgrade backup ---
-    - name: Ensure /backup directory exists
-      ansible.builtin.file:
-        path: /backup
-        state: directory
-        owner: root
-        group: root
-        mode: '0750'
+    - name: Back up Zabbix configs before package upgrade
       when: "'zabbix_hosts' in group_names"
+      block:
+        - name: Ensure /backup directory exists
+          ansible.builtin.file:
+            path: /backup
+            state: directory
+            owner: root
+            group: root
+            mode: '0750'
 
-    - name: Check which Zabbix config files exist
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop:
-        - /etc/zabbix/zabbix_agentd.conf
-        - /etc/zabbix/zabbix_server.conf
-        - /etc/zabbix/apache.conf
-        - /etc/zabbix/nginx.conf
-        - /etc/zabbix/web/zabbix.conf.php
-      register: zabbix_config_stat
-      when: "'zabbix_hosts' in group_names"
+        - name: Check which Zabbix config files exist
+          ansible.builtin.stat:
+            path: "{{ item }}"
+          loop:
+            - /etc/zabbix/zabbix_agentd.conf
+            - /etc/zabbix/zabbix_server.conf
+            - /etc/zabbix/apache.conf
+            - /etc/zabbix/nginx.conf
+            - /etc/zabbix/web/zabbix.conf.php
+          register: zabbix_config_stat
 
-    - name: Back up Zabbix configs to /backup with ISO date prefix
-      ansible.builtin.copy:
-        src: "{{ item.item }}"
-        dest: "/backup/{{ ansible_facts['date_time']['date'] }}_{{ item.item | basename }}"
-        remote_src: true
-        mode: preserve
-      loop: "{{ zabbix_config_stat.results | default([]) }}"
-      loop_control:
-        label: "{{ item.item | basename }}"
-      when:
-        - "'zabbix_hosts' in group_names"
-        - item.stat.exists
+        - name: Back up Zabbix configs to /backup with ISO date prefix
+          ansible.builtin.copy:
+            src: "{{ item.item }}"
+            dest: "/backup/{{ ansible_facts['date_time']['date'] }}_{{ item.item | basename }}"
+            remote_src: true
+            mode: preserve
+          loop: "{{ zabbix_config_stat.results | default([]) }}"
+          loop_control:
+            label: "{{ item.item | basename }}"
+          when: item.stat.exists
 
     # --- Standard maintenance ---
     - name: Update apt cache

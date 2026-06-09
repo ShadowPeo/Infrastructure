@@ -1,0 +1,102 @@
+---
+# Proxmox VE host management:
+#   1. Nag screen removal (IronicBadger.proxmox_nag_removal)
+#   2. ACME certificate provisioning via PVE's native ACME plugin (simoncaron.pve_acme)
+#   3. User / group / role / ACL management via the community.proxmox collection (API-driven)
+#
+# Target group: `proxmox` (add hosts to this group in personal/iac inventory)
+#
+# Prerequisite — one-time manual setup per PVE host BEFORE running this playbook:
+#   1. Create an automation user in PVE (e.g. ansible@pve) with PVEAdmin or sufficient role
+#   2. Generate an API token for that user (Datacenter → Permissions → API Tokens)
+#   3. Store the token id + secret in SOPS (see vars below)
+#
+# Required SOPS-encrypted vars (group_vars/proxmox/secrets.yml):
+#   proxmox_api_user           e.g. "ansible@pve"
+#   proxmox_api_token_id       e.g. "ansible"
+#   proxmox_api_token_secret   the secret string
+#
+# Optional vars (group_vars/proxmox/vars.yml):
+#   proxmox_api_host           defaults to ansible_host / inventory_hostname
+#   proxmox_api_validate_certs defaults to true (set false until ACME cert is live)
+#   proxmox_roles              list of custom role definitions
+#   proxmox_groups             list of group definitions
+#   proxmox_users              list of user definitions
+#   proxmox_acls               list of ACL bindings
+#
+# ACME role vars (consult simoncaron.pve_acme README for full list, set in group_vars):
+#   pve_acme_account            e.g. { name: "default", contact: "you@example.com" }
+#   pve_acme_certificates       list of cert definitions (node, domains, plugin)
+
+- name: Configure Proxmox VE
+  hosts: proxmox
+  become: true
+
+  roles:
+    - role: IronicBadger.proxmox_nag_removal
+    - role: simoncaron.pve_acme
+
+  tasks:
+    - name: Manage Proxmox custom roles
+      community.proxmox.proxmox_role:
+        api_host: "{{ proxmox_api_host | default(ansible_host | default(inventory_hostname)) }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        validate_certs: "{{ proxmox_api_validate_certs | default(true) }}"
+        roleid: "{{ item.name }}"
+        privileges: "{{ item.privileges }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ proxmox_roles | default([]) }}"
+      delegate_to: localhost
+      become: false
+
+    - name: Manage Proxmox groups
+      community.proxmox.proxmox_group:
+        api_host: "{{ proxmox_api_host | default(ansible_host | default(inventory_hostname)) }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        validate_certs: "{{ proxmox_api_validate_certs | default(true) }}"
+        groupid: "{{ item.name }}"
+        comment: "{{ item.comment | default(omit) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ proxmox_groups | default([]) }}"
+      delegate_to: localhost
+      become: false
+
+    - name: Manage Proxmox users
+      community.proxmox.proxmox_user:
+        api_host: "{{ proxmox_api_host | default(ansible_host | default(inventory_hostname)) }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        validate_certs: "{{ proxmox_api_validate_certs | default(true) }}"
+        userid: "{{ item.userid }}"
+        email: "{{ item.email | default(omit) }}"
+        comment: "{{ item.comment | default(omit) }}"
+        firstname: "{{ item.firstname | default(omit) }}"
+        lastname: "{{ item.lastname | default(omit) }}"
+        enable: "{{ item.enable | default(true) }}"
+        groups: "{{ item.groups | default(omit) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ proxmox_users | default([]) }}"
+      delegate_to: localhost
+      become: false
+
+    - name: Manage Proxmox ACLs
+      community.proxmox.proxmox_access_acl:
+        api_host: "{{ proxmox_api_host | default(ansible_host | default(inventory_hostname)) }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        validate_certs: "{{ proxmox_api_validate_certs | default(true) }}"
+        path: "{{ item.path }}"
+        type: "{{ item.type }}"
+        ugid: "{{ item.ugid }}"
+        roleid: "{{ item.role }}"
+        propagate: "{{ item.propagate | default(true) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ proxmox_acls | default([]) }}"
+      delegate_to: localhost
+      become: false
