@@ -1,0 +1,89 @@
+#!/bin/bash
+# Server status MOTD — managed by Ansible, do not edit manually
+
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+color_temp() {
+    local t=$1
+    if   [ "${t}" -lt 50 ]; then printf '%b' "${GREEN}${t}°C${RESET}"
+    elif [ "${t}" -lt 65 ]; then printf '%b' "${YELLOW}${t}°C${RESET}"
+    else                         printf '%b' "${RED}${t}°C${RESET}"
+    fi
+}
+
+UPTIME=$(uptime -p | sed 's/^up //')
+read -r L1 L5 L15 _ < /proc/loadavg
+MEM_USED=$(free -h | awk '/^Mem:/{print $3}')
+MEM_TOTAL=$(free -h | awk '/^Mem:/{print $2}')
+MEM_PCT=$(free | awk '/^Mem:/{printf "%.0f", $3/$2*100}')
+
+printf '\n'
+printf ' %b%s%b  [%s]  —  %s %s  |  Kernel %s\n' \
+    "${BOLD}" "{{ ansible_facts['hostname'] }}" "${RESET}" \
+    "{{ motd_owner | default(client_name | default('This System')) }}" \
+    "{{ ansible_facts['distribution'] }}" "{{ ansible_facts['distribution_version'] }}" "{{ ansible_facts['kernel'] }}"
+printf ' %s\n' "────────────────────────────────────────────────────"
+printf ' %bUptime%b  : %s\n'          "${CYAN}" "${RESET}" "${UPTIME}"
+printf ' %bLoad%b    : %s %s %s\n'    "${CYAN}" "${RESET}" "${L1}" "${L5}" "${L15}"
+printf ' %bMemory%b  : %s / %s (%s%%)\n' "${CYAN}" "${RESET}" "${MEM_USED}" "${MEM_TOTAL}" "${MEM_PCT}"
+
+{% if ansible_facts['virtualization_role'] != 'guest' %}
+# Physical host: temperatures
+CPU_TEMP=$(sensors 2>/dev/null | awk '/^Package id 0:|^Core 0:/{match($0, /\+([0-9]+)\.[0-9]+/, a); if (a[1]+0>0) {print a[1]; exit}}')
+MOBO_TEMP=$(sensors 2>/dev/null | awk '/^MB Temp:|^SYSTIN:|^Board Temp:|^Tdie:/{match($0, /\+([0-9]+)\.[0-9]+/, a); if (a[1]+0>0) {print a[1]; exit}}')
+
+if [ -n "${CPU_TEMP}" ] || [ -n "${MOBO_TEMP}" ]; then
+    printf ' %s\n' "────────────────────────────────────────────────────"
+    [ -n "${CPU_TEMP}" ]  && printf ' %bCPU Temp%b: %b\n' "${CYAN}" "${RESET}" "$(color_temp "${CPU_TEMP}")"
+    [ -n "${MOBO_TEMP}" ] && printf ' %bMotherbd%b: %b\n' "${CYAN}" "${RESET}" "$(color_temp "${MOBO_TEMP}")"
+fi
+
+# Physical host: drives
+DRIVE_HEADER_PRINTED=0
+for dev in $(ls /dev/sd? /dev/nvme?n1 2>/dev/null | sort); do
+    model=$(smartctl -i "${dev}" 2>/dev/null | awk -F': ' '/^(Device Model|Model Number)/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}')
+    [ -z "${model}" ] && continue
+    temp=$(smartctl -A "${dev}" 2>/dev/null | awk '/^190 Airflow|^194 Temperature|Temperature_Celsius/{print $10; exit}')
+    size=$(lsblk -dno SIZE "${dev}" 2>/dev/null)
+    if [ "${DRIVE_HEADER_PRINTED}" -eq 0 ]; then
+        printf ' %s\n' "────────────────────────────────────────────────────"
+        DRIVE_HEADER_PRINTED=1
+    fi
+    printf ' %b%-8s%b %-32s %-6s %b\n' \
+        "${CYAN}" "$(basename "${dev}")" "${RESET}" \
+        "${model}" "${size}" \
+        "$([ -n "${temp}" ] && color_temp "${temp}")"
+done
+{% endif %}
+
+{% if motd_zpool_stat.stat.exists %}
+# ZFS pools
+printf ' %s\n' "────────────────────────────────────────────────────"
+zpool list -H -o name,health,size,alloc,cap 2>/dev/null | while IFS=$'\t' read -r pool health size alloc cap; do
+    case "${health}" in
+        ONLINE)   hc="${GREEN}"  ;;
+        DEGRADED) hc="${YELLOW}" ;;
+        *)        hc="${RED}"    ;;
+    esac
+    printf ' %bZFS%b     : %b%-12s %-8s%b  %s / %s (%s)\n' \
+        "${CYAN}" "${RESET}" "${hc}" "${pool}" "${health}" "${RESET}" "${alloc}" "${size}" "${cap}"
+done
+{% endif %}
+
+{% if motd_nvidia_stat.stat.exists %}
+# NVIDIA GPU
+printf ' %s\n' "────────────────────────────────────────────────────"
+nvidia-smi --query-gpu=name,temperature.gpu --format=csv,noheader 2>/dev/null | \
+while IFS=',' read -r name temp; do
+    name=$(printf '%s' "${name}" | xargs)
+    temp=$(printf '%s' "${temp}" | xargs)
+    printf ' %bGPU     %b: %-32s %b\n' "${CYAN}" "${RESET}" "${name}" "$(color_temp "${temp}")"
+done
+{% endif %}
+
+printf '\n'

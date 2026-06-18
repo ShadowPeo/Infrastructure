@@ -1,0 +1,17 @@
+---
+# Rename a host to match its inventory name.
+# Works on Ubuntu, Debian, and Proxmox (single-node). Clustered Proxmox nodes are
+# refused by default — see roles/rename/defaults/main.yml for the override.
+#
+# Set rename_domain in host_vars or group_vars to get an FQDN /etc/hosts entry,
+# e.g. rename_domain: int.jps.sh produces "10.0.0.5 dh-jps.int.jps.sh dh-jps".
+#
+# Usage:
+#   ansible-playbook playbooks/rename.yml -i <inventory> --limit MY-HOST
+
+- name: Rename hosts to match inventory
+  hosts: linux_hosts
+  become: true
+
+  roles:
+    - role: rename

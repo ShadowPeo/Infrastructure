@@ -1,0 +1,10 @@
+mode: nftables
+log_mode: file
+log_dir: /var/log/
+log_level: info
+update_frequency: 10s
+api_url: http://{{ crowdsec_hub_hostname }}:{{ crowdsec_lapi_port }}/
+api_key: {{ crowdsec_bouncer_api_key }}
+disable_ipv6: false
+deny_action: DROP
+deny_log: false

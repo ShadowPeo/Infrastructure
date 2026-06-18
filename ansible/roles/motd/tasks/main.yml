@@ -1,0 +1,44 @@
+---
+- name: Detect ZFS
+  ansible.builtin.stat:
+    path: /usr/sbin/zpool
+  register: motd_zpool_stat
+
+- name: Detect NVIDIA
+  ansible.builtin.stat:
+    path: /dev/nvidia0
+  register: motd_nvidia_stat
+
+- name: Install physical host monitoring packages
+  ansible.builtin.apt:
+    name:
+      - smartmontools
+      - lm-sensors
+      - nvme-cli
+    state: present
+  when: ansible_facts['virtualization_role'] != 'guest'
+
+- name: Deploy server status script
+  ansible.builtin.template:
+    src: server-status.sh.j2
+    dest: /usr/local/bin/server-status.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy update-motd.d hook
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/99-server-status
+    content: "#!/bin/sh\nexec /usr/local/bin/server-status.sh\n"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Disable noisy default Ubuntu MOTD scripts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: '0644'
+  loop:
+    - /etc/update-motd.d/10-help-text
+    - /etc/update-motd.d/50-motd-news
+  failed_when: false

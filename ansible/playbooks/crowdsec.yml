@@ -1,0 +1,35 @@
+---
+# Deploy CrowdSec in hub/spoke mode.
+#
+# Hub (crowdsec_hub group — SRV-MC):
+#   Runs the LAPI in Docker. Pre-registers all linux_hosts as agents and bouncers
+#   so they can connect without a separate validation step.
+#
+# All hosts (linux_hosts):
+#   Native CrowdSec agent + nftables bouncer. Agent points to cs.intserv.cc
+#   (resolved via /etc/hosts to crowdsec_hub_ip). When the hub moves, update
+#   crowdsec_hub_ip in site inventory and re-run this playbook.
+#
+# Required in site inventory group_vars/all/secrets.yml (SOPS encrypted):
+#   crowdsec_hub_ip: ""           # Netbird IP of hub host
+#   crowdsec_enrollment_key: ""   # from app.crowdsec.net
+#   crowdsec_agent_password: ""   # shared agent auth password
+#   crowdsec_bouncer_api_key: ""  # shared bouncer API key
+#
+# Usage:
+#   ansible-playbook playbooks/crowdsec.yml -i <inventory>
+#   ansible-playbook playbooks/crowdsec.yml -i <inventory> --limit <host>
+
+- name: Deploy CrowdSec LAPI (hub)
+  hosts: crowdsec_hub
+  become: true
+
+  roles:
+    - role: crowdsec  # Docker LAPI — from Work/ansible/roles
+
+- name: Deploy CrowdSec agent and bouncer (all hosts)
+  hosts: linux_hosts
+  become: true
+
+  roles:
+    - role: crowdsec  # Native agent + bouncer — from Work/iac/ansible/roles

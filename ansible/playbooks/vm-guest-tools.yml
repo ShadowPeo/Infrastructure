@@ -1,0 +1,17 @@
+---
+# Install hypervisor guest tools on detected VMs.
+# Self-gates on ansible_facts.virtualization_role — safe to run against
+# linux_hosts broadly; bare-metal and Proxmox hypervisor hosts will no-op.
+# Today only Hyper-V (hyperv-daemons) is wired; KVM/VMware scaffolds present.
+#
+# Usage:
+#   ansible-playbook playbooks/vm-guest-tools.yml -i <inventory>
+#   ansible-playbook playbooks/vm-guest-tools.yml -i <inventory> --limit virtual_machines
+
+- name: Install hypervisor guest tools on VMs
+  hosts: linux_hosts
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: vm_guest_tools

@@ -1,0 +1,64 @@
+---
+- name: Add CrowdSec LAPI to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '\s{{ crowdsec_hub_hostname }}$'
+    line: "{{ crowdsec_hub_ip }}  {{ crowdsec_hub_hostname }}"
+    state: present
+
+- name: Add CrowdSec apt key
+  ansible.builtin.get_url:
+    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+    dest: /etc/apt/keyrings/crowdsec.asc
+    mode: '0644'
+
+- name: Add CrowdSec apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/crowdsec.asc] https://packagecloud.io/crowdsec/crowdsec/ubuntu/ {{ ansible_distribution_release }} main"
+    filename: crowdsec
+    state: present
+
+- name: Install CrowdSec agent and firewall bouncer
+  ansible.builtin.apt:
+    name:
+      - crowdsec
+      - crowdsec-firewall-bouncer-nftables
+    state: present
+    update_cache: true
+
+- name: Deploy agent LAPI credentials
+  ansible.builtin.template:
+    src: local_api_credentials.yaml.j2
+    dest: /etc/crowdsec/local_api_credentials.yaml
+    owner: root
+    group: root
+    mode: '0600'
+  notify: restart crowdsec
+
+- name: Deploy firewall bouncer config
+  ansible.builtin.template:
+    src: bouncer.yaml.j2
+    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+    owner: root
+    group: root
+    mode: '0600'
+  notify: restart crowdsec-firewall-bouncer
+
+- name: Install base collections
+  ansible.builtin.command:
+    cmd: cscli collections install {{ item }}
+  loop: "{{ crowdsec_base_collections + crowdsec_extra_collections }}"
+  changed_when: false
+  failed_when: false
+
+- name: Enable and start CrowdSec agent
+  ansible.builtin.service:
+    name: crowdsec
+    enabled: true
+    state: started
+
+- name: Enable and start CrowdSec firewall bouncer
+  ansible.builtin.service:
+    name: crowdsec-firewall-bouncer
+    enabled: true
+    state: started

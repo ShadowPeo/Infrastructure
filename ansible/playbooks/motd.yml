@@ -1,0 +1,22 @@
+---
+# Deploy login banner (legal AUP) and server status MOTD.
+# The banner role writes the static AUP text to /etc/motd and /etc/issue.net.
+# The motd role deploys a dynamic server-status script to /etc/update-motd.d/.
+# Both run together — re-running is safe and idempotent.
+#
+# Detection is fully fact-based:
+#   Physical vs VM : ansible_virtualization_role
+#   ZFS            : presence of /usr/sbin/zpool
+#   NVIDIA         : presence of /dev/nvidia0
+#
+# Usage:
+#   ansible-playbook playbooks/motd.yml -i <inventory>
+#   ansible-playbook playbooks/motd.yml -i <inventory> --limit <host>
+
+- name: Deploy login banner and server status MOTD
+  hosts: linux_hosts
+  become: true
+
+  roles:
+    - role: banner
+    - role: motd

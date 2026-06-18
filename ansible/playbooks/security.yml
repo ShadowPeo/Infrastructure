@@ -1,0 +1,11 @@
+---
+# Re-apply users, SSH hardening, and OS hardening without touching the app stack.
+# Use for key rotation, hardening updates, or pushing CVE mitigations.
+#
+# Usage:
+#   ansible-playbook playbooks/security.yml -i <inventory>
+#   ansible-playbook playbooks/security.yml -i <inventory> --limit <host>
+
+- import_playbook: users.yml
+- import_playbook: harden.yml
+- import_playbook: users.yml   # Re-run after hardening — os_hardening sets nologin on system UIDs (<1000), which breaks the ansible service account

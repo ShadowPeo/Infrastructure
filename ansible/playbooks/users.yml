@@ -122,14 +122,16 @@
     # --- SSH keys ---
     - name: Deploy SSH authorized keys
       ansible.posix.authorized_key:
-        user: "{{ item.0.username }}"
-        key: "{{ item.1 }}"
+        user: "{{ item.username }}"
+        key: "{{ item.ssh_keys | join('\n') }}"
         state: present
-        exclusive: false
-      when: item.0.state | default('present') == 'present'
-      loop: "{{ managed_users | subelements('ssh_keys', skip_missing=True) }}"
+        exclusive: true
+      when:
+        - item.state | default('present') == 'present'
+        - item.ssh_keys is defined
+      loop: "{{ managed_users }}"
       loop_control:
-        label: "{{ item.0.username }}"
+        label: "{{ item.username }}"
 
     # --- Sudo ---
     - name: Configure passwordless sudo for admin users

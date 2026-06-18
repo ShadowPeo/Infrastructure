@@ -1,0 +1,10 @@
+---
+# All detection is fact-based — no variables need overriding for normal use.
+# Physical vs VM : ansible_virtualization_role (guest = VM, anything else = physical)
+# ZFS            : presence of /usr/sbin/zpool detected at play time
+# NVIDIA         : presence of /dev/nvidia0 detected at play time
+
+# motd_owner — optional override for the owner/org name shown in the MOTD header.
+# If not set, falls back to client_name (used by the banner role), then 'This System'.
+# Set per site in group_vars/all/vars.yml or per host in host_vars/<host>/vars.yml.
+# motd_owner: "Justin's Ramblings"

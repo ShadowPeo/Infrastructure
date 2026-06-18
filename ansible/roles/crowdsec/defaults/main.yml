@@ -1,0 +1,16 @@
+---
+crowdsec_hub_hostname: cs.intserv.cc
+crowdsec_lapi_port: 8080
+
+# Base collections installed on every agent. Add extras per host/group via
+# crowdsec_extra_collections in group_vars (e.g. crowdsecurity/traefik for web servers).
+crowdsec_base_collections:
+  - crowdsecurity/linux
+  - crowdsecurity/sshd
+
+crowdsec_extra_collections: []
+
+# Set in site inventory group_vars/all/secrets.yml (SOPS encrypted)
+# crowdsec_hub_ip: ""           # Netbird IP of hub host — written to /etc/hosts
+# crowdsec_agent_password: ""   # must match what was pre-registered on the LAPI
+# crowdsec_bouncer_api_key: ""  # must match what was pre-registered on the LAPI
