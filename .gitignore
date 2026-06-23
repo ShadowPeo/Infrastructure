@@ -15,6 +15,21 @@ $RECYCLE.BIN/
 
 ### Docker ###
 .env
+.env.*
+!.env.example
+
+### Secrets ###
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.yml
+secrets.yaml
+vault_pass*
+
+### Temp ###
+tmp/
+temp/
 
 ### Terraform ###
 **/.terraform/*
